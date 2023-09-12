@@ -26,8 +26,60 @@
 
             <div class="p-6 mx-auto max-w-7xl lg:p-8">
                 <div class="flex justify-center">
-                    <div class="flex justify-center">
-                        <img src="{{ asset('/logos/equipoalfa.jpg') }}" alt="Redes-Pueblo" width="300">
+                    <div class="grid grid-cols-4">
+
+                        <div class="col-span-4 mb-12">
+                            <img src="{{ asset('/logos/gente.jpg') }}" alt="Redes-Pueblo" width="600">
+                        </div>
+                        
+                        <div class="inline-flex mt-12">
+                            
+                            <div class="mx-4">
+                                <form method="POST" action="{{ route('/admin') }}">
+                                    @csrf
+                                    <div class="flex items-center justify-end mt-4">
+                                        <x-button class="ml-4">
+                                            ADMINISTRADOR
+                                        </x-button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="mx-4">
+                                <form method="POST" action="{{ route('/coord') }}">
+                                    @csrf
+                                    <div class="flex items-center justify-end mt-4">
+                                        <x-button class="ml-4">
+                                            COORDINADOR
+                                        </x-button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="mx-4">
+                                <form method="POST" action="{{ route('/opers') }}">
+                                    @csrf
+                                    <div class="flex items-center justify-end mt-4">
+                                        <x-button class="ml-4">
+                                            OPERADORES
+                                        </x-button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="mx-4">
+                                <form method="POST" action="{{ route('/proms') }}">
+                                    @csrf
+                                    <div class="flex items-center justify-end mt-4">
+                                        <x-button class="ml-4">
+                                            PROMOTORES
+                                        </x-button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                        </div>
+                            
                     </div>
                 </div>
             </div>

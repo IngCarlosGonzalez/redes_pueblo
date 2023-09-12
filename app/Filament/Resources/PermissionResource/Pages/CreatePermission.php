@@ -21,4 +21,9 @@ class CreatePermission extends CreateRecord
             ->title('PERMISO REGISTRADO OK')
             ->body('El permiso ha sido registrado correctamente.');
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->previousUrl ?? $this->getResource()::getUrl('index');
+    }
 }

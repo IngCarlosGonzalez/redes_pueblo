@@ -33,19 +33,18 @@ class OpersPanelProvider extends PanelProvider
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
                 'info' => Color::Blue,
-                'primary' => Color::Indigo,
+                'primary' => Color::Lime,
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
             ])
             ->discoverResources(in: app_path('Filament/Opers/Resources'), for: 'App\\Filament\\Opers\\Resources')
             ->discoverPages(in: app_path('Filament/Opers/Pages'), for: 'App\\Filament\\Opers\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                //
             ])
             ->discoverWidgets(in: app_path('Filament/Opers/Widgets'), for: 'App\\Filament\\Opers\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

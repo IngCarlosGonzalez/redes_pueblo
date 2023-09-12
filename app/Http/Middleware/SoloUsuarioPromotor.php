@@ -3,11 +3,16 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Traits\HasRoles;
 use Symfony\Component\HttpFoundation\Response;
 
 class SoloUsuarioPromotor
 {
+    use HasRoles;
+    
     /**
      * Handle an incoming request.
      *
@@ -16,15 +21,17 @@ class SoloUsuarioPromotor
     public function handle(Request $request, Closure $next): Response
     {
                     
-        $usuario = auth()->user();
+        $usuario = Auth::user();
 
-        if ($usuario->is_admin) {
+        if (! $usuario->is_active) {
 
-            return redirect('/');
+            abort(401, 'Usuario Desactivado');
 
-        } elseif (! $usuario->level_id == 4) {
+        }
 
-            abort(403);
+        if (! $usuario->hasRole('PROMOTOR') ) {
+
+            abort(403, 'Solo para Promotores');
 
         }
 

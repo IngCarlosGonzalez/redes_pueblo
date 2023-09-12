@@ -40,12 +40,11 @@ class PromsPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Proms/Resources'), for: 'App\\Filament\\Proms\\Resources')
             ->discoverPages(in: app_path('Filament/Proms/Pages'), for: 'App\\Filament\\Proms\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                //
             ])
             ->discoverWidgets(in: app_path('Filament/Proms/Widgets'), for: 'App\\Filament\\Proms\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

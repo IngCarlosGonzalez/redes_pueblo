@@ -40,12 +40,11 @@ class CoordPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Coord/Resources'), for: 'App\\Filament\\Coord\\Resources')
             ->discoverPages(in: app_path('Filament/Coord/Pages'), for: 'App\\Filament\\Coord\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                //
             ])
             ->discoverWidgets(in: app_path('Filament/Coord/Widgets'), for: 'App\\Filament\\Coord\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

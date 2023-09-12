@@ -8,8 +8,11 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
-use Filament\Support\Enums\FontWeight;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -20,7 +23,7 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $modelLabel = 'USUARIOS';
+    protected static ?string $modelLabel = 'Usuarios';
 
     protected static ?string $navigationLabel = 'Admin Usuarios';
 
@@ -34,10 +37,9 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-
                 Section::make('Datos del Usuario')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nombre de Usuario')
                             ->autofocus()
                             ->required()
@@ -46,10 +48,11 @@ class UserResource extends Resource
                                 'md' => 3,
                             ])
                             ->autocomplete(false)
-                            ->formatStateUsing(fn (string $state): string => strtoupper($state))
+                            ->default('')
+                            ->placeholder('aqui el nombre')
                             ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('email')
+                        TextInput::make('email')
                             ->label('Cuenta de Correo')
                             ->email()
                             ->required()
@@ -58,8 +61,11 @@ class UserResource extends Resource
                                 'md' => 3,
                             ])
                             ->autocomplete(false)
+                            ->default('')
+                            ->placeholder('aqui la cuenta')
+                            ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label('Contraseña')
                             ->password()
                             ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
@@ -70,14 +76,16 @@ class UserResource extends Resource
                                 'md' => 3,
                             ])
                             ->autocomplete(false)
-                            ->maxLength(255),
-                        Forms\Components\Toggle::make('is_active')
+                            ->default('')
+                            ->placeholder('aqui la password')
+                            ->minLength(8),
+                        Toggle::make('is_active')
                             ->label('Activo?')
                             ->inline(false)
                             ->onColor('success')
                             ->offColor('danger')
                             ->required(),
-                        Forms\Components\Toggle::make('is_admin')
+                        Toggle::make('is_admin')
                             ->label('Es Admin?')
                             ->inline(false)
                             ->onColor('success')
@@ -85,20 +93,24 @@ class UserResource extends Resource
                             ->onIcon('heroicon-m-bolt')
                             ->offIcon('heroicon-m-user')
                             ->required(),
-                        Forms\Components\Select::make('level_id')
-                            ->label('Nivel Acceso')
+                        Select::make('level_id')
+                            ->label('Acceso')
                             ->options([
-                                '1' => 'GLOBAL',
+                                '1' => 'TODO',
                                 '2' => 'DIVISION',
                                 '3' => 'GRUPO',
                                 '4' => 'CELULA',
-                                '5' => 'Ninguno',
+                                '5' => 'nada',
                             ])
                             ->required(), 
-                    ])
+                        Select::make('roles')
+                            ->relationship('roles', 'name')
+                            ->preload()
+                            ->required(),
+                        ])
                     ->columns([
-                        'sm' => 1,
-                        'md' => 3,
+                            'sm' => 1,
+                            'md' => 3,
                         ]
                     )
 
@@ -127,9 +139,8 @@ class UserResource extends Resource
                     ->label('Es Admin?')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('level_id')
-                    ->label('Nivel Acceso')
+                    ->label('Acceso a')
                     ->size(TextColumnSize::Large)
-                    ->weight(FontWeight::Bold)
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         '1' => 'primary',

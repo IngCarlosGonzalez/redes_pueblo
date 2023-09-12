@@ -36,7 +36,8 @@ class PermissionResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true),
                         Forms\Components\Select::make('guard_name')
                             ->options([
                                 'web' => 'WEB',

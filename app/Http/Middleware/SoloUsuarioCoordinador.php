@@ -3,11 +3,16 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Traits\HasRoles;
 use Symfony\Component\HttpFoundation\Response;
 
 class SoloUsuarioCoordinador
 {
+    use HasRoles;
+    
     /**
      * Handle an incoming request.
      *
@@ -15,16 +20,18 @@ class SoloUsuarioCoordinador
      */
     public function handle(Request $request, Closure $next): Response
     {
-                    
-        $usuario = auth()->user();
 
-        if ($usuario->is_admin) {
+        $usuario = Auth::user();
 
-            return redirect('/');
+        if (! $usuario->is_active) {
 
-        } elseif (! $usuario->level_id == 2) {
+            abort(401, 'Usuario Desactivado');
 
-            abort(403);
+        }
+
+        if (! $usuario->hasRole('COORDINADOR') ) {
+
+            abort(403, 'Solo para Coordinadores');
 
         }
 

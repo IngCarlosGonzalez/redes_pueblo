@@ -21,4 +21,9 @@ class CreateRole extends CreateRecord
             ->title('ROLE REGISTRADO OK')
             ->body('El role ha sido registrado correctamente.');
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->previousUrl ?? $this->getResource()::getUrl('index');
+    }
 }

@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Spatie\Permission\Models\Role;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\RoleResource\Pages;
@@ -36,13 +37,17 @@ class RoleResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true),
                         Forms\Components\Select::make('guard_name')
                             ->options([
                                 'web' => 'WEB',
                                 'api' => 'API',
                             ])
                             ->required(),
+                        Select::make('permissions')
+                            ->multiple()
+                            ->relationship('permissions', 'name')->preload()
                     ])
                     ->columns(1)
             ]);

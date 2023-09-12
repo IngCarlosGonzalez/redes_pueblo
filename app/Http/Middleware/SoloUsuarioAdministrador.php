@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function Laravel\Prompts\alert;
+
 class SoloUsuarioAdministrador
 {
     /**
@@ -18,10 +20,15 @@ class SoloUsuarioAdministrador
                     
         $usuario = auth()->user();
 
-        if (! $usuario->is_admin) {
-            // return redirect('/');
+        if (! $usuario->is_active) {
 
-            abort(403);
+            return redirect('/');
+
+        }
+
+        if (! $usuario->is_admin) {
+
+            abort(403, 'Solo para Administrador');
 
         }
 

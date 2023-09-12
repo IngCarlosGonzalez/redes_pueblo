@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,24 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+/* Route::get('/admin', function () {
+    //
+})->name('admin');
+
+Route::get('/coord', function () {
+    //
+})->name('coord');
+
+Route::get('/opers', function () {
+    //
+})->name('opers');
+
+Route::get('/proms', function () {
+    //
+})->name('proms'); */
+
 
 /* Route::middleware([
     'auth:sanctum',
