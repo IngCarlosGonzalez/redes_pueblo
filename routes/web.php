@@ -19,21 +19,10 @@ Route::get('/', function () {
 });
 
 
-/* Route::get('/admin', function () {
-    //
-})->name('admin');
-
-Route::get('/coord', function () {
-    //
-})->name('coord');
-
-Route::get('/opers', function () {
-    //
-})->name('opers');
-
-Route::get('/proms', function () {
-    //
-})->name('proms'); */
+/*     Route::redirect("/opcion1", "/admin");
+    Route::redirect("/opcion2", "/coord");
+    Route::redirect("/opcion3", "/opers");
+    Route::redirect("/opcion4", "/proms"); */
 
 
 /* Route::middleware([
