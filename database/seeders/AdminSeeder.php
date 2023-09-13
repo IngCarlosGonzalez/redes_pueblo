@@ -16,17 +16,60 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         User::create(
-                  [
-                      'name' => 'Carlos Gonzalez',
-                      'email' => 'cegcdeveloper@gmail.com',
-                      'password' => Hash::make('rufirufi'),
-                      'email_verified_at' => now(),
-                      'remember_token' => Str::random(10),
-                      'profile_photo_path' => 'logos/MINDMAN.JPG',
-                      'is_active' => 1,
-                      'is_admin' => 1,
-                      'level_id' => 1,
-                  ]
-              )->assignRole('ADMINISTRADOR');
+            [
+                'name' => 'Carlos Gonzalez',
+                'email' => 'cegcdeveloper@gmail.com',
+                'password' => Hash::make('rufirufi'),
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+                'profile_photo_path' => 'logos/MINDMAN.JPG',
+                'is_active' => 1,
+                'is_admin' => 1,
+                'level_id' => 1,
+            ]
+        )->assignRole('ADMINISTRADOR');
+
+        User::create(
+            [
+                'name' => 'Patricia Gonzalez',
+                'email' => 'patricia@prueba.com',
+                'password' => Hash::make('muysecreta'),
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+                'profile_photo_path' => 'logos/MINDMAN.JPG',
+                'is_active' => 1,
+                'is_admin' => 0,
+                'level_id' => 2,
+            ]
+        )->assignRole('COORDINADOR');
+
+        User::create(
+            [
+                'name' => 'Operador Num 1',
+                'email' => 'operador1@prueba.com',
+                'password' => Hash::make('muysecreta'),
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+                'profile_photo_path' => 'logos/MINDMAN.JPG',
+                'is_active' => 1,
+                'is_admin' => 0,
+                'level_id' => 3,
+            ]
+        )->assignRole('OPERADOR');
+
+        User::create(
+            [
+                'name' => 'Promotor Num 1',
+                'email' => 'promotor1@prueba.com',
+                'password' => Hash::make('muysecreta'),
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
+                'profile_photo_path' => 'logos/MINDMAN.JPG',
+                'is_active' => 1,
+                'is_admin' => 0,
+                'level_id' => 4,
+            ]
+        )->assignRole('PROMOTOR');
+
     }
 }

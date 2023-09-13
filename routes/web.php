@@ -19,12 +19,6 @@ Route::get('/', function () {
 });
 
 
-/*     Route::redirect("/opcion1", "/admin");
-    Route::redirect("/opcion2", "/coord");
-    Route::redirect("/opcion3", "/opers");
-    Route::redirect("/opcion4", "/proms"); */
-
-
 /* Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
