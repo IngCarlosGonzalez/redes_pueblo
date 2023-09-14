@@ -17,197 +17,197 @@ class MunicipioSeeder extends Seeder
     {
         Municipio::create(
             [
-                'nombre_mpio' => 'ABASOLO',
+                'nombre' => 'ABASOLO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'ACUÑA',
+                'nombre' => 'ACUÑA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'ALLENDE',
+                'nombre' => 'ALLENDE',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'ARTEAGA',
+                'nombre' => 'ARTEAGA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'CANDELA',
+                'nombre' => 'CANDELA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'CASTAÑOS',
+                'nombre' => 'CASTAÑOS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'CUATRO CIENEGAS',
+                'nombre' => 'CUATRO CIENEGAS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'ESCOBEDO',
+                'nombre' => 'ESCOBEDO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'FRANCISCO I. MADERO',
+                'nombre' => 'FRANCISCO I. MADERO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'FRONTERA',
+                'nombre' => 'FRONTERA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'GENERAL CEPEDA',
+                'nombre' => 'GENERAL CEPEDA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'GUERRERO',
+                'nombre' => 'GUERRERO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'HIDALGO',
+                'nombre' => 'HIDALGO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'JIMENEZ',
+                'nombre' => 'JIMENEZ',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'JUAREZ',
+                'nombre' => 'JUAREZ',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'LA MADRID',
+                'nombre' => 'LA MADRID',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'MATAMOROS',
+                'nombre' => 'MATAMOROS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'MONCLOVA',
+                'nombre' => 'MONCLOVA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'MORELOS',
+                'nombre' => 'MORELOS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'MUZQUIZ',
+                'nombre' => 'MUZQUIZ',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'NADADORES',
+                'nombre' => 'NADADORES',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'NAVA',
+                'nombre' => 'NAVA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'OCAMPO',
+                'nombre' => 'OCAMPO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'PARRAS DE LA FUENTE',
+                'nombre' => 'PARRAS DE LA FUENTE',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'PIEDRAS NEGRAS',
+                'nombre' => 'PIEDRAS NEGRAS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'PROGRESO',
+                'nombre' => 'PROGRESO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'RAMOS ARIZPE',
+                'nombre' => 'RAMOS ARIZPE',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'SABINAS',
+                'nombre' => 'SABINAS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'SACRAMENTO',
+                'nombre' => 'SACRAMENTO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'SALTILLO',
+                'nombre' => 'SALTILLO',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'SAN BUENAVENTURA',
+                'nombre' => 'SAN BUENAVENTURA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'SAN JUAN DE SABINAS',
+                'nombre' => 'SAN JUAN DE SABINAS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'SAN PEDRO DE LAS COLONIAS',
+                'nombre' => 'SAN PEDRO DE LAS COLONIAS',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'SIERRA MOJADA',
+                'nombre' => 'SIERRA MOJADA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'TORREON',
+                'nombre' => 'TORREON',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'VIESCA',
+                'nombre' => 'VIESCA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'VILLA UNION',
+                'nombre' => 'VILLA UNION',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'ZARAGOZA',
+                'nombre' => 'ZARAGOZA',
             ]
         );
         Municipio::create(
             [
-                'nombre_mpio' => 'INDETERMINADO',
+                'nombre' => 'INDETERMINADO',
             ]
         );
     }

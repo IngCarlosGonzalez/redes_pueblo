@@ -10,6 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -67,12 +69,18 @@ class User extends Authenticatable implements FilamentUser
     ];
 
     public function canAccessPanel(Panel $panel): bool
-            {
-                return $this->hasRole([
-                    'ADMINISTRADOR', 
-                    'COORDINADOR', 
-                    'OPERADOR',
-                    'PROMOTOR'
-                ]);
-            }
+    {
+        return $this->hasRole([
+            'ADMINISTRADOR', 
+            'COORDINADOR', 
+            'OPERADOR',
+            'PROMOTOR'
+        ]);
+    }
+
+    public function contactos(): HasMany
+    {
+        return $this->hasMany(Contacto::class);
+    }
+
 }

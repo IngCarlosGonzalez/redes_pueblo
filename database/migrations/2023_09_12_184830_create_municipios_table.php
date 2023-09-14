@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('municipios', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre_mpio', 30)->nullable();
+            $table->string('nombre', 30)->nullable();
             $table->timestamps();
         });
     }

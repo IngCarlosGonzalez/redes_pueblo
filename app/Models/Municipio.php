@@ -2,20 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Municipio extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'nombre_mpio'
+        'nombre'
     ];
 
-    public function colonias()
+    public function colonias(): HasMany
     {
-        return $this->hasMany('App\Models\Colonia');
+        return $this->hasMany(Colonia::class);
     }
 
+    public function contactos(): HasMany
+    {
+        return $this->hasMany(Contacto::class);
+    }
 }

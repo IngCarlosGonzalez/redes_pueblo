@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Categoria extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'clasificacion'
+        'nombre'
     ];
 
+    public function patients(): HasMany
+    {
+        return $this->hasMany(Contacto::class);
+    }
 }

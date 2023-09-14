@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Colonia extends Model
 {
@@ -25,9 +27,13 @@ class Colonia extends Model
         'num_control'
     ];
 
-    public function municipio()
+    public function municipio(): BelongsTo
     {
-        return $this->belongsTo('App\Models\Municipio')->withDefault();
+        return $this->belongsTo(Municipio::class);
     }
 
+    public function contactos(): HasMany
+    {
+        return $this->hasMany(Contacto::class);
+    }
 }

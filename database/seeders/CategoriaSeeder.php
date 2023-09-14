@@ -18,57 +18,72 @@ class CategoriaSeeder extends Seeder
     {
         Categoria::create(
             [
-                'clasificacion' => 'GENERAL',
+                'nombre' => 'GENERAL',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'AMISTADES',
+                'nombre' => 'AMISTADES',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'CIUDADANOS',
+                'nombre' => 'FAMILIARES',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'SIMPATIZANTES',
+                'nombre' => 'VECINOS',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'CIRCULOS',
+                'nombre' => 'CIUDADANOS',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'MILITANTES',
+                'nombre' => 'SIMPATIZANTES',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'CONSEJEROS',
+                'nombre' => 'CIRCULOS',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'REPRESENTANTES',
+                'nombre' => 'MILITANTES',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'COMITES',
+                'nombre' => 'CONSEJEROS',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'FUNCIONARIOS',
+                'nombre' => 'REPRESENTANTES',
             ]
         );
         Categoria::create(
             [
-                'clasificacion' => 'GESTORES',
+                'nombre' => 'COMITES BASE',
+            ]
+        );
+        Categoria::create(
+            [
+                'nombre' => 'DEL PARTIDO',
+            ]
+        );
+        Categoria::create(
+            [
+                'nombre' => 'FUNCIONARIOS',
+            ]
+        );
+        Categoria::create(
+            [
+                'nombre' => 'OTROS',
             ]
         );
     }
