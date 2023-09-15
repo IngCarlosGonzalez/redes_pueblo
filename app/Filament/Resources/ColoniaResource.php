@@ -25,7 +25,7 @@ class ColoniaResource extends Resource
 
     protected static ?string $navigationLabel = 'Colonias';
 
-    protected static ?string $navigationIcon = 'heroicon-o-identification';
+    protected static ?string $navigationIcon = 'heroicon-m-building-office';
 
     protected static ?string $navigationGroup = 'CATALOGOS';
 
@@ -121,37 +121,37 @@ class ColoniaResource extends Resource
                     ->sortable(),
                 TextColumn::make('entidad')
                     ->label('Entidad')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
                 TextColumn::make('municipio_id')
                     ->label('Mpio Id')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
                 TextColumn::make('nombre_mpio')
                     ->label('Municipio')
                     ->sortable(),
                 TextColumn::make('distrito_fed')
                     ->label('DistritoFed')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
                 TextColumn::make('distrito_local')
                     ->label('DistLocal')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
                 TextColumn::make('numero_de_ruta')
                     ->label('NúmeroRuta')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
                 TextColumn::make('seccion')
                     ->label('NúmSección')
                     ->sortable(),
                 TextColumn::make('tipo_seccion')
                     ->label('Tipo Sección')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
                 TextColumn::make('tipo_colonia')
                     ->label('Tipo de Colonia')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
                 TextColumn::make('nombre_colonia')
                     ->label('Nombre de la Colonia')
@@ -162,7 +162,7 @@ class ColoniaResource extends Resource
                     ->sortable(),
                 TextColumn::make('num_control')
                     ->label('NúmControl')
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault : true)
                     ->sortable(),
             ])
             ->filters([

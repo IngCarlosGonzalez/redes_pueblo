@@ -50,9 +50,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('CONTROL'),
+                    ->label('CONTROL')
+                    ->collapsed(fn (): bool => true),
                 NavigationGroup::make()
-                    ->label('CATALOGOS'),
+                    ->label('CATALOGOS')
+                    ->collapsed(fn (): bool => true),
+                NavigationGroup::make()
+                    ->label('REGISTRO'),
             ])
             ->middleware([
                 EncryptCookies::class,

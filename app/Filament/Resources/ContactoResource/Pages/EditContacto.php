@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\ColoniaResource\Pages;
+namespace App\Filament\Resources\ContactoResource\Pages;
 
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use App\Filament\Resources\ColoniaResource;
+use App\Filament\Resources\ContactoResource;
 
-class EditColonia extends EditRecord
+class EditContacto extends EditRecord
 {
-    protected static string $resource = ColoniaResource::class;
+    protected static string $resource = ContactoResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -25,8 +25,8 @@ class EditColonia extends EditRecord
             ->duration(8000)
             ->icon('heroicon-o-check-circle')
             ->iconColor('warning')
-            ->title('COLONIA ALMACENADA OK')
-            ->body('La colonia ha sido actualizada correctamente.');
+            ->title('CONTACTO ALMACENADO OK')
+            ->body('El contacto ha sido actualizado correctamente.');
     }
 
     protected function getRedirectUrl(): string
