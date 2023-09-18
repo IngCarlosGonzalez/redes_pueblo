@@ -41,7 +41,7 @@ return new class extends Migration
             $table->string('domicilio_codpost', 10)->nullable();
 
             $table->boolean('colonia_catalogada')->default(0);
-            $table->foreignId('colonia_id')->constrained('colonias')->default(0);
+            $table->foreignId('colonia_id')->constrained('colonias')->default(1);
             $table->foreignId('municipio_id')->constrained('municipios')->default(39);
 
             $table->boolean('tiene_celular')->default(0);
@@ -84,9 +84,9 @@ return new class extends Migration
             $table->string('numero_credencial', 20)->nullable();
 
             $table->boolean('en_comite')->default(0);
-            $table->string('comite_base', 30)->default('');
-            $table->string('comite_rol', 30)->default('');
-            $table->string('defensor_voto', 30)->default('');
+            $table->string('comite_base', 30)->nullable();
+            $table->string('comite_rol', 30)->nullable();
+            $table->string('defensor_voto', 30)->nullable();
 
             $table->boolean('en_partido')->default(0);
             $table->string('partido_area', 30)->nullable();

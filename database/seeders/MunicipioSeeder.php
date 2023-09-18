@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Colonia;
 use App\Models\Municipio;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -208,6 +209,24 @@ class MunicipioSeeder extends Seeder
         Municipio::create(
             [
                 'nombre' => 'INDETERMINADO',
+            ]
+        );
+
+        Colonia::create(
+            [
+                'codigo' => 1,
+                'entidad' => 5,
+                'municipio_id' => 39,
+                'nombre_mpio' => 'INDETERMINADO',
+                'distrito_fed' => 0,
+                'distrito_local' => 0,
+                'numero_de_ruta' => 0,
+                'seccion' => 0,
+                'tipo_seccion' => 'default',
+                'tipo_colonia' => 'default',
+                'nombre_colonia' => 'INDETERMINADO',
+                'cod_post_colon' => 22222,
+                'num_control' => 9999999,
             ]
         );
     }

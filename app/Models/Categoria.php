@@ -14,7 +14,7 @@ class Categoria extends Model
         'nombre'
     ];
 
-    public function patients(): HasMany
+    public function contactos(): HasMany
     {
         return $this->hasMany(Contacto::class);
     }
