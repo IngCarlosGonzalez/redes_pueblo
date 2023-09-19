@@ -78,9 +78,4 @@ class User extends Authenticatable implements FilamentUser
         ]);
     }
 
-    public function contactos(): HasMany
-    {
-        return $this->hasMany(Contacto::class);
-    }
-
 }

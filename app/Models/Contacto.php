@@ -12,19 +12,9 @@ class Contacto extends Model
 
     protected $guarded = [];
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
-    }
-
-    public function colonia(): BelongsTo
-    {
-        return $this->belongsTo(Colonia::class);
     }
 
     public function municipio(): BelongsTo

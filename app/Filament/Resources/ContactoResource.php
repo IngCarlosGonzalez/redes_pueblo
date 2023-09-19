@@ -4,11 +4,18 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Colonia;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use App\Models\Contacto;
 use Filament\Forms\Form;
+use App\Models\Municipio;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -45,50 +52,54 @@ class ContactoResource extends Resource
                         ->schema([
 
                             Select::make('clave_origen')
-                                ->options([
-                                    'SinOrigen'   => 'Sin Origen',
-                                    'EnOficinas'  => 'En Oficinas',
-                                    'EnBrigadas'  => 'En Brigadas',
-                                    'Referencias' => 'Referencias',
-                                    'Importacion' => 'Importación',
-                                    'Otros'       => 'Otros',
-                                ])
-                                ->required(),
+                            ->options([
+                                'OFICINAS'    => 'OFICINAS',
+                                'BRIGADEO'    => 'BRIGADEO',
+                                'REFERENCIAS' => 'REFERENCIAS',
+                                'IMPORTADOS'  => 'IMPORTADOS',
+                                'OTROS'       => 'OTROS',
+                            ])
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('owner_id', auth()->user()->id)),
+
+                            Hidden::make('owner_id')
+                            ->live(),
 
                             Select::make('categoria_id')
-                                ->relationship('categoria', 'nombre')
-                                ->preload()
-                                ->required(),
+                            ->relationship('categoria', 'nombre')
+                            ->preload()
+                            ->required(),
                 
                             TextInput::make('nombre_completo')
-                                ->label('Nombre Completo')
-                                ->autofocus()
-                                ->required()
-                                ->autocomplete(false)
-                                ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                                ->maxLength(60),
-
+                            ->label('Nombre Completo')
+                            ->autofocus()
+                            ->required()
+                            ->autocomplete(false)
+                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
+                            ->maxLength(60),
+                            
                             Select::make('clave_genero')
-                                ->options([
-                                    'Sin Datos'  => 'Sin Datos',
-                                    'Femenino'   => 'Femenino',
-                                    'Masculino'  => 'Masculino',
-                                    'Diversidad' => 'Diversidad',
-                                ])
-                                ->required(),
+                            ->options([
+                                'FEMENINO'   => 'FEMENINO',
+                                'MASCULINO'  => 'MASCULINO',
+                                'DIVERSIDAD' => 'DIVERSIDAD',
+                                'SIN DATOS'  => 'SIN DATOS',
+                            ])
+                            ->required(),
 
                             DatePicker::make('fecha_nacimiento')
-                                ->label('Fecha de Nacimiento')
-                                ->format('d/m/Y')
-                                ->minDate(now()->subYears(100))
-                                ->maxDate(now())
-                                ->required(),
+                            ->label('Fecha de Nacimiento')
+                            ->format('Y/m/d')
+                            ->displayFormat('d/m/Y')
+                            ->minDate(now()->subYears(100))
+                            ->maxDate(now())
+                            ->required(),
 
                             TextInput::make('dato_de_curp')
-                                ->label('Clave de la CURP')
-                                ->maxLength(20)
-                                ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                                ->required(),
+                            ->label('Clave de la CURP')
+                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
+                            ->maxLength(20),
 
                         ])
                         ->compact()
@@ -99,46 +110,48 @@ class ContactoResource extends Resource
                         ->aside() 
                         ->schema([
                             
-                            TextInput::make('domicilio_calle')
-                                ->label('Domicilio Calle')
-                                ->maxLength(60)
-                                ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                                ->required(),
-                            
-                            TextInput::make('domicilio_numext')
-                                ->label('Número Exterior')
-                                ->numeric()
-                                ->maxLength(10)
-                                ->required(),
-                            
-                            TextInput::make('domicilio_numint')
-                                ->label('Número Interior')
-                                ->maxLength(10),
-                            
+                            Select::make('municipio_id')
+                            ->options(Municipio::all()->pluck('nombre', 'id')->toArray())
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('colonia_id', null)),
+
+                            Select::make('colonia_id')
+                            ->options(function (Get $get) {
+                                $mpio = Municipio::find($get('municipio_id'));
+                                if($mpio){
+                                    return $mpio->colonias->pluck('nombre_colonia', 'id');
+                                }
+                            })
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('colonia_catalogada', true)),
+
+                            Toggle::make('colonia_catalogada')
+                            ->label('Colonia en Catálogo?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live()
+                            ->required()
+                            ->afterStateUpdated(fn (Set $set) => $set('domicilio_colonia', 'n/a')),
+
                             TextInput::make('domicilio_colonia')
-                                ->label('Colonia')
-                                ->maxLength(60)
-                                ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                                ->required(),
-                            
-                            TextInput::make('domicilio_localidad')
-                                ->label('Localidad')
-                                ->maxLength(60)
-                                ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                                ->required(),
-                            
-                            TextInput::make('domicilio_municipio')
-                                ->label('Municipio')
-                                ->maxLength(60)
-                                ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                                ->required(),
-                            
+                            ->label('Colonia No Catalogada')
+                            ->maxLength(60)
+                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state)),
+
+                            TextInput::make('domicilio_completo')
+                            ->label('Domicilio Calle y Número')
+                            ->maxLength(80)
+                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
+                            ->required(),
+
                             TextInput::make('domicilio_codpost')
-                                ->label('Código Postal')
-                                ->numeric()
-                                ->mask('99999')
-                                ->maxLength(5)
-                                ->required(),
+                            ->label('Código Postal')
+                            ->numeric()
+                            ->mask('99999')
+                            ->minLength(5)
+                            ->required(),
 
                         ])
                         ->compact()

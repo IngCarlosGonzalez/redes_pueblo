@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('contactos', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')->constrained('users')->default(1);
+            $table->unsignedBigInteger('owner_id')->default(0);
             $table->unsignedTinyInteger('nivel_en_red')->default(5);
             $table->string('clave_tipo', 20)->default('Integrante');
             $table->boolean('con_req_admin')->default(0);
@@ -24,25 +24,20 @@ return new class extends Migration
             $table->unsignedBigInteger('user_asignado')->default(0);
             $table->boolean('user_vigente')->default(0);
 
-            $table->string('clave_origen', 20)->default('SinOrigen');
+            $table->string('clave_origen', 20)->default('OTROS');
             $table->foreignId('categoria_id')->constrained('categorias')->default(1);
 
             $table->string('nombre_completo', 60)->nullable();
-            $table->string('clave_genero', 20)->default('Sin Datos');
+            $table->string('clave_genero', 20)->default('SIN DATOS');
             $table->date('fecha_nacimiento')->nullable();
             $table->string('dato_de_curp', 20)->nullable();
 
-            $table->string('domicilio_calle', 60)->nullable();
-            $table->string('domicilio_numext', 10)->nullable();
-            $table->string('domicilio_numint', 10)->nullable();
-            $table->string('domicilio_colonia', 60)->nullable();
-            $table->string('domicilio_localidad', 60)->nullable();
-            $table->string('domicilio_municipio', 60)->nullable();
-            $table->string('domicilio_codpost', 10)->nullable();
-
-            $table->boolean('colonia_catalogada')->default(0);
-            $table->foreignId('colonia_id')->constrained('colonias')->default(1);
             $table->foreignId('municipio_id')->constrained('municipios')->default(39);
+            $table->unsignedBigInteger('colonia_id')->default(0);
+            $table->boolean('colonia_catalogada')->default(1);
+            $table->string('domicilio_colonia', 60)->nullable();
+            $table->string('domicilio_completo', 80)->nullable();
+            $table->string('domicilio_codpost', 10)->nullable();
 
             $table->boolean('tiene_celular')->default(0);
             $table->string('telefono_movil', 20)->nullable();

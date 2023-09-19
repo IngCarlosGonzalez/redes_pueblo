@@ -17,7 +17,7 @@ class ContactoFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => 1,
+            'owner_id' => 1,
 
             'nivel_en_red'   => 5,
             'clave_tipo'     => 'Integrante',
@@ -28,25 +28,21 @@ class ContactoFactory extends Factory
             'user_asignado'  => 0,
             'user_vigente'   => 0,
 
-            'clave_origen'     => 'SinOrigen',
+            'clave_origen'     => 'OTROS',
             'categoria_id'     => $this->faker->numberBetween($min = 1, $max = 6),
 
             'nombre_completo'  => $this->faker->name,
-            'clave_genero'     => 'Sin Datos',
+            'clave_genero'     => 'SIN DATOS',
             'fecha_nacimiento' => $this->faker->date($max = '2000-01-01'),
 
-            'dato_de_curp'     => $this->faker->word,
+            'dato_de_curp'     => 'SIN DATOS',
 
-            'domicilio_calle'     => $this->faker->word,
-            'domicilio_numext'    => $this->faker->numberBetween($min = 101, $max = 1999),
-            'domicilio_numint'    => '',
-            'domicilio_colonia'   => $this->faker->word,
-            'domicilio_localidad' => $this->faker->word,
-            'domicilio_municipio' => $this->faker->word,
-            'domicilio_codpost'   => '25678',
+            'municipio_id'        => 30,
+            'colonia_id'          => 0,
             'colonia_catalogada'  => 0,
-            'colonia_id'          => 1,
-            'municipio_id'        => 39,
+            'domicilio_colonia'   => 'SIN DATOS',
+            'domicilio_completo'     => $this->faker->address,
+            'domicilio_codpost'   => '25678',
 
             'tiene_celular'     => 1,
             'telefono_movil'    => $this->faker->tollFreePhoneNumber,
@@ -83,7 +79,7 @@ class ContactoFactory extends Factory
 
             'es_militante'      => 0,
             'numero_afiliacion' => '',
-            'fecha_afiliacion'  =>null,
+            'fecha_afiliacion'  => null,
             'numero_credencial' => '',
             'en_comite'         => 0,
             'comite_base'       => '',
