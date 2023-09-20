@@ -17,9 +17,11 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ContactoResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -46,34 +48,13 @@ class ContactoResource extends Resource
                 Section::make('DATOS DEL CONTACTO')
                     ->schema([
 
-                        Section::make('Datos Básicos')
+                        Section::make()
                         ->description('Identificación y Clasificación del Contacto')
-                        ->aside() 
                         ->schema([
 
-                            Select::make('clave_origen')
-                            ->options([
-                                'OFICINAS'    => 'OFICINAS',
-                                'BRIGADEO'    => 'BRIGADEO',
-                                'REFERENCIAS' => 'REFERENCIAS',
-                                'IMPORTADOS'  => 'IMPORTADOS',
-                                'OTROS'       => 'OTROS',
-                            ])
-                            ->required()
-                            ->live()
-                            ->afterStateUpdated(fn (Set $set) => $set('owner_id', auth()->user()->id)),
-
-                            Hidden::make('owner_id')
-                            ->live(),
-
-                            Select::make('categoria_id')
-                            ->relationship('categoria', 'nombre')
-                            ->preload()
-                            ->required(),
-                
                             TextInput::make('nombre_completo')
                             ->label('Nombre Completo')
-                            ->autofocus()
+                            ->autofocus(fn (): bool => true)
                             ->required()
                             ->autocomplete(false)
                             ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
@@ -97,10 +78,35 @@ class ContactoResource extends Resource
                             ->required(),
 
                             TextInput::make('dato_de_curp')
-                            ->label('Clave de la CURP')
-                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                            ->maxLength(20),
+                            ->label('Teclear la CURP')
+                            ->maxLength(20)
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
 
+                            Select::make('clave_origen')
+                            ->options([
+                                'OFICINAS'    => 'OFICINAS',
+                                'BRIGADEO'    => 'BRIGADEO',
+                                'REFERENCIAS' => 'REFERENCIAS',
+                                'IMPORTADOS'  => 'IMPORTADOS',
+                                'OTROS'       => 'OTROS',
+                            ])
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('owner_id', auth()->user()->id)),
+
+                            Hidden::make('owner_id')
+                            ->live(),
+
+                            Select::make('categoria_id')
+                            ->relationship('categoria', 'nombre')
+                            ->preload()
+                            ->required(),
+                
                         ])
                         ->compact()
                         ->columns(1),
@@ -124,21 +130,46 @@ class ContactoResource extends Resource
                                 }
                             })
                             ->live()
-                            ->afterStateUpdated(fn (Set $set) => $set('colonia_catalogada', true)),
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                $set('colonia_catalogada', true);
+                                $set('domicilio_colonia', 'n/a');
+                                $set('domicilio_codpost', '-----');
+                                $set('distrito_federal', 0);
+                                $set('distrito_estatal', 0);
+                                $set('numero_de_ruta', 0);
+                                $set('numero_seccion', 0);
+                                $set('seccion_prioritaria', false);
+                                $lacolonia = Colonia::find($get('colonia_id'));
+                                if($lacolonia){
+                                    $set('domicilio_codpost', $lacolonia->cod_post_colon);
+                                }
+                            }),
 
                             Toggle::make('colonia_catalogada')
                             ->label('Colonia en Catálogo?')
                             ->inline(false)
                             ->onColor('success')
                             ->offColor('danger')
-                            ->live()
                             ->required()
-                            ->afterStateUpdated(fn (Set $set) => $set('domicilio_colonia', 'n/a')),
+                            ->live(),
 
                             TextInput::make('domicilio_colonia')
                             ->label('Colonia No Catalogada')
                             ->maxLength(60)
-                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state)),
+                            ->live()
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('colonia_catalogada');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            })
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
 
                             TextInput::make('domicilio_completo')
                             ->label('Domicilio Calle y Número')
@@ -148,10 +179,7 @@ class ContactoResource extends Resource
 
                             TextInput::make('domicilio_codpost')
                             ->label('Código Postal')
-                            ->numeric()
-                            ->mask('99999')
-                            ->minLength(5)
-                            ->required(),
+                            ->live(),
 
                         ])
                         ->compact()
@@ -161,67 +189,559 @@ class ContactoResource extends Resource
                         ->description('Teléfonos y correo electrónico del contacto')
                         ->aside() 
                         ->schema([
-                            //
+
+                            Toggle::make('tiene_celular')
+                            ->label('Tiene Celular Personal?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('telefono_movil')
+                            ->label('Número del Móvil')
+                            ->tel()
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_celular');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
+                            Toggle::make('tiene_watsapp')
+                            ->label('Maneja Wattsapp?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('tiene_celular');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            }),
+
+                            TextInput::make('telefono_familiar')
+                            ->label('Núm. Teléfono de Casa')
+                            ->tel(),
+
+                            TextInput::make('telefono_recados')
+                            ->label('Teléfono para Recados')
+                            ->tel(),
+
+                            Toggle::make('tiene_correo')
+                            ->label('Tiene Correo Electrónico?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('cuenta_de_correo')
+                            ->label('Su Cuenta de Correo')
+                            ->email()
+                            ->maxLength(80)
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_correo');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
                         ])
                         ->compact()
                         ->columns(1),
 
                         Section::make('Datos Redes Sociales')
                         ->description('Información de cuentas en redes del Contacto')
-                        ->aside() 
                         ->schema([
-                            //
-                        ])
-                        ->collapsed() 
-                        ->compact()
-                        ->columns(1),
 
-                        Section::make('Credencial del INE')
-                        ->description('Registro de Imágenes de la Credencial para Votar')
-                        ->aside() 
-                        ->schema([
-                            //
+                            Toggle::make('tiene_facebook')
+                            ->label('Tiene Cuenta en Facebook?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('contacto_facebook')
+                            ->label('Su Cuenta de Facebook')
+                            ->maxLength(60)
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_facebook');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
+                            Toggle::make('tiene_instagram')
+                            ->label('Tiene Cuenta en Instagram?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('contacto_instagram')
+                            ->label('Su Cuenta de Instagram')
+                            ->maxLength(60)
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_instagram');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
+                            Toggle::make('tiene_telegram')
+                            ->label('Tiene Cuenta en Telegram?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('contacto_telegram')
+                            ->label('Su Cuenta de Telegram')
+                            ->maxLength(60)
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_telegram');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
+                            Toggle::make('tiene_twitter')
+                            ->label('Tiene Cuenta en Twitter?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('contacto_twitter')
+                            ->label('Su Cuenta de Twitter')
+                            ->maxLength(60)
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_twitter');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
+                            Toggle::make('tiene_otra_red')
+                            ->label('Tiene Cuenta en Otra Red?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('contacto_otra_red')
+                            ->label('Su Cuenta de Otra Red')
+                            ->maxLength(60)
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_otra_red');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
                         ])
+                        ->collapsible() 
                         ->collapsed() 
                         ->compact()
                         ->columns(1),
 
                         Section::make('Información Electoral')
                         ->description('Datos extraíos de la credencial del INE del Contacto')
-                        ->aside() 
                         ->schema([
-                            //
+
+                            TextInput::make('numero_cred_ine')
+                            ->label('Número Credencial del INE')
+                            ->maxLength(20),
+
+                            TextInput::make('clave_elector')
+                            ->label('Teclear Clave de Elector')
+                            ->maxLength(20),
+                            
+                            TextInput::make('numero_ocr_ine')
+                            ->label('Número OCR del Reverso')
+                            ->maxLength(20),
+                            
+                            DatePicker::make('vigencia_cred_ine')
+                            ->label('Vigencia de la Credencial')
+                            ->format('Y/m/d')
+                            ->displayFormat('d/m/Y')
+                            ->minDate(now()->subYears(10))
+                            ->maxDate(now()->addYears(20)),
+
+                            TextInput::make('distrito_federal')
+                            ->label('Número Distrito Federtal')
+                            ->numeric(),
+
+                            TextInput::make('distrito_estatal')
+                            ->label('Número Distrito Local')
+                            ->numeric(),
+
+                            TextInput::make('numero_de_ruta')
+                            ->label('Número de la Ruta')
+                            ->numeric(),
+
+                            TextInput::make('numero_seccion')
+                            ->label('Número de la Sección')
+                            ->numeric(),
+
+                            Toggle::make('seccion_prioritaria')
+                            ->label('Es Sección Prioritaria?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger'),
+
                         ])
+                        ->collapsible() 
+                        ->collapsed() 
+                        ->compact()
+                        ->columns(1),
+
+                        Section::make('Credencial del INE')
+                        ->description('Registro de Imágenes de la Credencial para Votar')
+                        ->schema([
+
+                            Toggle::make('tiene_fotos_ine')
+                            ->label('Tiene Fotos de Credencial INE?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger'),
+                            
+                            FileUpload::make('foto_ine_frente')
+                            ->label('Imagen del Frente')
+                            ->image(),
+                                                        
+                            FileUpload::make('foto_ine_detras')
+                            ->label('Imagen del Reverso')
+                            ->image(),
+                            
+                        ])
+                        ->collapsible() 
                         ->collapsed() 
                         ->compact()
                         ->columns(1),
 
                         Section::make('Datos de Participación')
                         ->description('Información sobre participaciones actuales del Contacto')
-                        ->aside() 
                         ->schema([
-                            //
+
+                            Toggle::make('es_militante')
+                            ->label('Es Militante del Partido?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('numero_afiliacion')
+                            ->label('Número de Afiliación')
+                            ->maxLength(20)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('es_militante');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            }),
+
+                            DatePicker::make('fecha_afiliacion')
+                            ->label('Fecha de Afiliación')
+                            ->format('Y/m/d')
+                            ->displayFormat('d/m/Y')
+                            ->minDate(now()->subYears(20))
+                            ->maxDate(now())
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('es_militante');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            }),
+
+                            TextInput::make('numero_credencial')
+                            ->label('Número de Credencial')
+                            ->maxLength(20)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('es_militante');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            }),
+
+                            Toggle::make('en_comite')
+                            ->label('Es Parte de un Comité Base?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            Select::make('comite_base')
+                            ->label('Su Asignación Actual?')
+                            ->options([
+                                'INTEGRANTE'   => 'INTEGRANTE',
+                                'ENLACE NÚM.1' => 'ENLACE NÚM.1',
+                                'ENLACE NÚM.2' => 'ENLACE NÚM.2',
+                                'No Aplica'    => 'NO APLICA',
+                            ])
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('en_comite');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            }),
+
+                            Select::make('comite_rol')
+                            ->label('Que Rol Desempeña?')
+                            ->options([
+                                'COORDINADOR'   => 'COORDINADOR',
+                                'ES ACTIVISTA'  => 'ES ACTIVISTA',
+                                'DEFENSOR VOTO' => 'DEFENSOR VOTO',
+                                'MOVILIZADOR'   => 'MOVILIZADOR',
+                                'ES AUXILIAR'   => 'ES AUXILIAR',
+                                'OTROS'         => 'OTROS',
+                                'No Aplica'     => 'NO APLICA',
+                            ])
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('en_comite');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            }),
+
+                            Select::make('defensor_voto')
+                            ->label('En la Defensa del Voto?')
+                            ->options([
+                                'ES COORDINADOR'      => 'ES COORDINADOR',
+                                'REPRESENTANTE LEGAL' => 'REPRESENTANTE LEGAL',
+                                'REP.CASILLA PROPIET' => 'REP.CASILLA PROPIET',
+                                'REP:CASILLA SUPLENT' => 'REP:CASILLA SUPLENT',
+                                'ES ASISTENTE'        => 'ES ASISTENTE',
+                                'No Aplica'           => 'NO APLICA',
+                            ])
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('en_comite');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            }),
+
+                            Toggle::make('en_partido')
+                            ->label('Es Integrante del Partido?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('partido_area')
+                            ->label('En que Area del Partido?')
+                            ->maxLength(30)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('en_partido');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            })
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
+
+                            TextInput::make('partido_puesto')
+                            ->label('En que Puesto Actual?')
+                            ->maxLength(30)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('en_partido');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            })
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
+
+                            TextInput::make('partido_lugar')
+                            ->label('En que Lugar se Ubica?')
+                            ->maxLength(30)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('en_partido');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            })
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
+
+                            Toggle::make('es_funcionario')
+                            ->label('Es Funcionario Actualmente?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('puesto_cargo')
+                            ->label('Que Puesto o Cargo Tiene?')
+                            ->maxLength(30)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('es_funcionario');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            })
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
+
+                            TextInput::make('dependencia')
+                            ->label('En que Dependencia?')
+                            ->maxLength(30)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('es_funcionario');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            })
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
+
+                            TextInput::make('ubicacion')
+                            ->label('Dónde se Ubica su Oficina?')
+                            ->maxLength(30)
+                            ->disabled(function (Get $get) {
+                                $opcion = $get('es_funcionario');
+                                if (isset($opcion)){
+                                    return !$opcion;
+                                }
+                                return true;
+                            })
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
+
                         ])
+                        ->collapsible() 
                         ->collapsed() 
                         ->compact()
                         ->columns(1),
 
                         Section::make('Areas de Interés')
                         ->description('Intereses personales manifestados por el Contacto')
-                        ->aside() 
                         ->schema([
-                            //
+
+                            Toggle::make('interesa_afiliacion')
+                            ->label('Le Interesa Afiliarse')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_defensavoto')
+                            ->label('Le Interesa Defender el Voto')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_armarcomite')
+                            ->label('Le Interesa Armar Comité de Base')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_unirsecomite')
+                            ->label('Le Interesa Unirse a un Comité')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_recibwatsaps')
+                            ->label('Acepta Recibir Avisos por Watsapp')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_recibllamadas')
+                            ->label('Acepta Recibir Llamadas Telefónicas')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_recibcorreos')
+                            ->label('Acepta Recibir Correos Electrónicos')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_recibvisitas')
+                            ->label('Acepta Recibir Visitas en Domicilio')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_capacitacion')
+                            ->label('Le Interesa Recibir Capacitación')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_asistireventos')
+                            ->label('Le Interesa Asistir a Eventos')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_asistirviajees')
+                            ->label('Le Interesa Asistir a Viajes')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
+                            Toggle::make('interesa_darasesorias')
+                            ->label('Le Interesa Ofrecer Asesorías')
+                            ->onColor('success')
+                            ->offColor('danger'),
+
                         ])
+                        ->collapsible() 
                         ->collapsed() 
                         ->compact()
                         ->columns(1),
 
-                        Section::make('Textos Registrados')
+                        Section::make('Textos Adicionales')
                         ->description('Ideas y Opiniones del Contacto y Nuestras Observaciones')
-                        ->aside() 
                         ->schema([
-                            //
+                            
+                            Textarea::make('sus_aportaciones')
+                            ->label('Aportaciones del Contacto')
+                            ->autosize()
+                            ->maxLength(1024),
+
+                            Textarea::make('mis_comentarios')
+                            ->label('Observaciones y Comentarios')
+                            ->autosize()
+                            ->maxLength(1024),
+
                         ])
+                        ->collapsible() 
                         ->collapsed() 
                         ->compact()
                         ->columns(1),
