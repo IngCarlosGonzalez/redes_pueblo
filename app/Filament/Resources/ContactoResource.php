@@ -20,11 +20,14 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ContactoResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use App\Filament\Resources\ContactoResource\RelationManagers;
 
 class ContactoResource extends Resource
@@ -49,7 +52,6 @@ class ContactoResource extends Resource
                     ->schema([
 
                         Section::make()
-                        ->description('Identificación y Clasificación del Contacto')
                         ->schema([
 
                             TextInput::make('nombre_completo')
@@ -413,13 +415,19 @@ class ContactoResource extends Resource
                             ->onColor('success')
                             ->offColor('danger'),
                             
-                            FileUpload::make('foto_ine_frente')
+                            SpatieMediaLibraryFileUpload::make('foto_ine_frente')
                             ->label('Imagen del Frente')
-                            ->image(),
-                                                        
-                            FileUpload::make('foto_ine_detras')
+                            ->directory('FotosINE')
+                            ->preserveFilenames()
+                            ->image()
+                            ->maxSize(200),
+
+                            SpatieMediaLibraryFileUpload::make('foto_ine_detras')
                             ->label('Imagen del Reverso')
-                            ->image(),
+                            ->directory('FotosINE')
+                            ->preserveFilenames()
+                            ->image()
+                            ->maxSize(200),
                             
                         ])
                         ->collapsible() 
@@ -760,10 +768,16 @@ class ContactoResource extends Resource
                 TextColumn::make('categoria.nombre')
                     ->label('Clasificación')
                     ->sortable(),
+                TextColumn::make('owner_id')
+                    ->label('Owns')
+                    ->sortable(),
                 TextColumn::make('nombre_completo')
                     ->label('Nombre del Contacto')
                     ->searchable()
                     ->sortable(),
+                ImageColumn::make('foto_ine_frente')
+                    ->label('Foto INE')
+                    ->square(),
                 TextColumn::make('created_at')
                     ->label('Registrado')
                     ->dateTime()

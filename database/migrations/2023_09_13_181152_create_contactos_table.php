@@ -67,10 +67,10 @@ return new class extends Migration
             $table->string('clave_elector', 20)->nullable();
             $table->string('numero_ocr_ine', 20)->nullable();
             $table->date('vigencia_cred_ine')->nullable();
-            $table->integer('distrito_federal')->unsigned()->default(0);
-            $table->integer('distrito_estatal')->unsigned()->default(0);
-            $table->integer('numero_de_ruta')->unsigned()->default(0);
-            $table->integer('numero_seccion')->unsigned()->default(0);
+            $table->integer('distrito_federal')->nullable()->default(0);
+            $table->integer('distrito_estatal')->nullable()->default(0);
+            $table->integer('numero_de_ruta')->nullable()->default(0);
+            $table->integer('numero_seccion')->nullable()->default(0);
             $table->boolean('seccion_prioritaria')->default(0);
 
             $table->boolean('es_militante')->default(0);
