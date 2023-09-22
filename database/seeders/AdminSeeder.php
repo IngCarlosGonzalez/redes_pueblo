@@ -32,16 +32,16 @@ class AdminSeeder extends Seeder
         User::create(
             [
                 'name' => 'Patricia Gonzalez',
-                'email' => 'patricia@prueba.com',
+                'email' => 'patricia@redespueblo.com',
                 'password' => Hash::make('muysecreta'),
                 'email_verified_at' => now(),
                 'remember_token' => Str::random(10),
                 'profile_photo_path' => 'logos/MINDMAN.JPG',
                 'is_active' => 1,
-                'is_admin' => 0,
-                'level_id' => 2,
+                'is_admin' => 1,
+                'level_id' => 1,
             ]
-        )->assignRole('COORDINADOR');
+        )->assignRole('ADMINISTRADOR');
 
     }
 }

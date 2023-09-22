@@ -119,12 +119,15 @@ class ContactoResource extends Resource
                         ->schema([
                             
                             Select::make('municipio_id')
+                            ->label('Municipio')
                             ->options(Municipio::all()->pluck('nombre', 'id')->toArray())
                             ->required()
                             ->live()
                             ->afterStateUpdated(fn (Set $set) => $set('colonia_id', null)),
 
                             Select::make('colonia_id')
+                            ->label('Colonia')
+                            ->searchable()
                             ->options(function (Get $get) {
                                 $mpio = Municipio::find($get('municipio_id'));
                                 if($mpio){
@@ -136,6 +139,7 @@ class ContactoResource extends Resource
                                 $set('colonia_catalogada', true);
                                 $set('domicilio_colonia', 'n/a');
                                 $set('domicilio_codpost', '-----');
+                                $set('con_domi_actual', 0);
                                 $set('distrito_federal', 0);
                                 $set('distrito_estatal', 0);
                                 $set('numero_de_ruta', 0);
@@ -353,10 +357,16 @@ class ContactoResource extends Resource
                         ->collapsed() 
                         ->compact()
                         ->columns(1),
-
+                        
                         Section::make('Información Electoral')
                         ->description('Datos extraíos de la credencial del INE del Contacto')
                         ->schema([
+
+                            Toggle::make('con_domi_actual')
+                            ->label('INE con Domicilo Actual?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger'),
 
                             TextInput::make('numero_cred_ine')
                             ->label('Número Credencial del INE')
@@ -415,19 +425,19 @@ class ContactoResource extends Resource
                             ->onColor('success')
                             ->offColor('danger'),
                             
-                            SpatieMediaLibraryFileUpload::make('foto_ine_frente')
-                            ->label('Imagen del Frente')
-                            ->directory('FotosINE')
-                            ->preserveFilenames()
+                            FileUpload::make('fotos_del_ine')
+                            ->label('Fotos de Credencial INE (frente y reverso)')
+                            ->multiple()
+                            ->disk('public_media')
+                            ->directory('Fotos_INE')
+                            ->storeFileNamesIn('nombres_reales')
+                            ->downloadable()
+                            ->openable()
                             ->image()
-                            ->maxSize(200),
+                            ->maxSize(400)
+                            ->maxFiles(2),
 
-                            SpatieMediaLibraryFileUpload::make('foto_ine_detras')
-                            ->label('Imagen del Reverso')
-                            ->directory('FotosINE')
-                            ->preserveFilenames()
-                            ->image()
-                            ->maxSize(200),
+                            Hidden::make('nombres_reales'),
                             
                         ])
                         ->collapsible() 
@@ -775,8 +785,8 @@ class ContactoResource extends Resource
                     ->label('Nombre del Contacto')
                     ->searchable()
                     ->sortable(),
-                ImageColumn::make('foto_ine_frente')
-                    ->label('Foto INE')
+                ImageColumn::make('fotos_del_ine')
+                    ->label('Fotos INE')
                     ->square(),
                 TextColumn::make('created_at')
                     ->label('Registrado')

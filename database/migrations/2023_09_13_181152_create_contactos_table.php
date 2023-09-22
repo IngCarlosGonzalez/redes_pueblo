@@ -60,9 +60,10 @@ return new class extends Migration
             $table->string('contacto_otra_red', 60)->nullable();
 
             $table->boolean('tiene_fotos_ine')->default(0);
-            $table->string('foto_ine_frente', 2048)->nullable();
-            $table->string('foto_ine_detras', 2048)->nullable();
+            $table->string('fotos_del_ine', 255)->nullable();
+            $table->string('nombres_reales', 255)->nullable();
             
+            $table->boolean('con_domi_actual')->default(0);
             $table->string('numero_cred_ine', 20)->nullable();
             $table->string('clave_elector', 20)->nullable();
             $table->string('numero_ocr_ine', 20)->nullable();

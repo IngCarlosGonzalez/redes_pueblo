@@ -33,6 +33,12 @@ class Contacto extends Model implements HasMedia
         'distrito_estatal'    => 0,
         'numero_de_ruta'      => 0,
         'numero_seccion'      => 0,
+        'con_domi_actual'     => false,
+    ];
+
+    protected $casts = [
+        'fotos_del_ine' => 'array',
+        'nombres_reales' => 'array',
     ];
 
     public function categoria(): BelongsTo
