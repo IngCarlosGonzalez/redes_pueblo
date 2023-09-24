@@ -17,6 +17,8 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
+use Filament\Support\Enums\FontFamily;
+use Filament\Support\Enums\FontWeight;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -205,7 +207,9 @@ class ContactoResource extends Resource
 
                             TextInput::make('telefono_movil')
                             ->label('Número del Móvil')
-                            ->tel()
+                            ->mask('999 999 99 99')
+                            ->placeholder('(844) 000 00 00')
+                            ->length(13)
                             ->required(function (Get $get) {
                                 $opcion = $get('tiene_celular');
                                 if (isset($opcion)){
@@ -229,11 +233,15 @@ class ContactoResource extends Resource
 
                             TextInput::make('telefono_familiar')
                             ->label('Núm. Teléfono de Casa')
-                            ->tel(),
+                            ->mask('999 999 99 99')
+                            ->placeholder('(844) 000 00 00')
+                            ->length(13),
 
                             TextInput::make('telefono_recados')
                             ->label('Teléfono para Recados')
-                            ->tel(),
+                            ->mask('999 999 99 99')
+                            ->placeholder('(844) 000 00 00')
+                            ->length(13),
 
                             Toggle::make('tiene_correo')
                             ->label('Tiene Correo Electrónico?')
@@ -425,7 +433,7 @@ class ContactoResource extends Resource
                             ->onColor('success')
                             ->offColor('danger'),
                             
-                            FileUpload::make('fotos_del_ine')
+                        FileUpload::make('fotos_del_ine')
                             ->label('Fotos de Credencial INE (frente y reverso)')
                             ->multiple()
                             ->disk('public_media')
@@ -434,6 +442,10 @@ class ContactoResource extends Resource
                             ->downloadable()
                             ->openable()
                             ->image()
+                            ->imageResizeMode('cover')
+                            ->imageCropAspectRatio('16:9')
+                            ->imageResizeTargetWidth('640')
+                            ->imageResizeTargetHeight('360')
                             ->maxSize(400)
                             ->maxFiles(2),
 
@@ -775,19 +787,29 @@ class ContactoResource extends Resource
             ->columns([
                 TextColumn::make('id')
                     ->sortable(),
-                TextColumn::make('categoria.nombre')
-                    ->label('Clasificación')
-                    ->sortable(),
                 TextColumn::make('owner_id')
                     ->label('Owns')
+                    ->color('primary')
+                    ->weight(FontWeight::Bold)
                     ->sortable(),
                 TextColumn::make('nombre_completo')
                     ->label('Nombre del Contacto')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('telefono_movil')
+                    ->label('Teléfono Móvil')
+                    ->color('success')
+                    ->weight(FontWeight::Bold)
+                    ->size(TextColumn\TextColumnSize::Medium)
+                    ->fontFamily(FontFamily::Mono)
+                    ->sortable(),
+                TextColumn::make('categoria.nombre')
+                    ->label('Clasificación')
+                    ->sortable(),
                 ImageColumn::make('fotos_del_ine')
                     ->label('Fotos INE')
-                    ->square(),
+                    ->width(64)
+                    ->height(36),
                 TextColumn::make('created_at')
                     ->label('Registrado')
                     ->dateTime()
@@ -802,7 +824,7 @@ class ContactoResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    //
                 ]),
             ])
             ->emptyStateActions([
