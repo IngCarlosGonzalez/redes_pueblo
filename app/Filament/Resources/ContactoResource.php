@@ -73,12 +73,11 @@ class ContactoResource extends Resource
                             ])
                             ->required(),
 
-                            DatePicker::make('fecha_nacimiento')
+                            TextInput::make('fecha_nacimiento')
                             ->label('Fecha de Nacimiento')
-                            ->format('Y/m/d')
-                            ->displayFormat('d/m/Y')
-                            ->minDate(now()->subYears(100))
-                            ->maxDate(now())
+                            ->mask('9999-99-99')
+                            ->length(10)
+                            ->placeholder('AAAA-MM-DD')
                             ->required(),
 
                             TextInput::make('dato_de_curp')
@@ -114,7 +113,23 @@ class ContactoResource extends Resource
                         ])
                         ->compact()
                         ->columns(1),
+                            
+                        FileUpload::make('foto_personal')
+                        ->label('Foto de la Persona')
+                        ->disk('digitalocean')
+                        ->directory('RedesPueblo/Fotos')
+                        ->storeFileNamesIn('nombre_de_foto')
+                        ->downloadable()
+                        ->openable()
+                        ->image()
+                        ->imageResizeMode('cover')
+                        ->imageCropAspectRatio('1:1')
+                        ->imageResizeTargetWidth('300')
+                        ->imageResizeTargetHeight('300')
+                        ->maxSize(200),
 
+                        Hidden::make('nombre_de_foto'),
+                        
                         Section::make('Datos del Domicilio')
                         ->description('Ubicación del domicilio particular del Contacto')
                         ->aside() 
@@ -147,6 +162,7 @@ class ContactoResource extends Resource
                                 $set('numero_de_ruta', 0);
                                 $set('numero_seccion', 0);
                                 $set('seccion_prioritaria', false);
+                                $set('datos_verificados', false);
                                 $lacolonia = Colonia::find($get('colonia_id'));
                                 if($lacolonia){
                                     $set('domicilio_codpost', $lacolonia->cod_post_colon);
@@ -306,24 +322,6 @@ class ContactoResource extends Resource
                                 return false;
                             }),
 
-                            Toggle::make('tiene_telegram')
-                            ->label('Tiene Cuenta en Telegram?')
-                            ->inline(false)
-                            ->onColor('success')
-                            ->offColor('danger')
-                            ->live(),
-
-                            TextInput::make('contacto_telegram')
-                            ->label('Su Cuenta de Telegram')
-                            ->maxLength(60)
-                            ->required(function (Get $get) {
-                                $opcion = $get('tiene_telegram');
-                                if (isset($opcion)){
-                                    return $opcion;
-                                }
-                                return false;
-                            }),
-
                             Toggle::make('tiene_twitter')
                             ->label('Tiene Cuenta en Twitter?')
                             ->inline(false)
@@ -336,6 +334,24 @@ class ContactoResource extends Resource
                             ->maxLength(60)
                             ->required(function (Get $get) {
                                 $opcion = $get('tiene_twitter');
+                                if (isset($opcion)){
+                                    return $opcion;
+                                }
+                                return false;
+                            }),
+
+                            Toggle::make('tiene_telegram')
+                            ->label('Tiene Cuenta en Telegram?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->live(),
+
+                            TextInput::make('contacto_telegram')
+                            ->label('Su Cuenta de Telegram')
+                            ->maxLength(60)
+                            ->required(function (Get $get) {
+                                $opcion = $get('tiene_telegram');
                                 if (isset($opcion)){
                                     return $opcion;
                                 }
@@ -376,8 +392,18 @@ class ContactoResource extends Resource
                             ->onColor('success')
                             ->offColor('danger'),
 
+                            TextInput::make('domicilio_credencial')
+                            ->label('Domicilio Registrado en Credencial')
+                            ->maxLength(80)
+                            ->dehydrateStateUsing(function (string | NULL $state) {
+                                if (isset($state)){
+                                    return strtoupper($state);
+                                }
+                                return 'n/a';
+                            }),
+
                             TextInput::make('numero_cred_ine')
-                            ->label('Número Credencial del INE')
+                            ->label('Número de Credencial del INE')
                             ->maxLength(20),
 
                             TextInput::make('clave_elector')
@@ -388,12 +414,11 @@ class ContactoResource extends Resource
                             ->label('Número OCR del Reverso')
                             ->maxLength(20),
                             
-                            DatePicker::make('vigencia_cred_ine')
+                            TextInput::make('vigencia_cred_ine')
                             ->label('Vigencia de la Credencial')
-                            ->format('Y/m/d')
-                            ->displayFormat('d/m/Y')
-                            ->minDate(now()->subYears(10))
-                            ->maxDate(now()->addYears(20)),
+                            ->mask('9999-99-99')
+                            ->length(10)
+                            ->placeholder('AAAA-MM-DD'),
 
                             TextInput::make('distrito_federal')
                             ->label('Número Distrito Federtal')
@@ -417,6 +442,12 @@ class ContactoResource extends Resource
                             ->onColor('success')
                             ->offColor('danger'),
 
+                            Toggle::make('datos_verificados')
+                            ->label('Datos Electorales Verificados OK?')
+                            ->inline(false)
+                            ->onColor('success')
+                            ->offColor('danger'),
+
                         ])
                         ->collapsible() 
                         ->collapsed() 
@@ -433,12 +464,11 @@ class ContactoResource extends Resource
                             ->onColor('success')
                             ->offColor('danger'),
                             
-                        FileUpload::make('fotos_del_ine')
-                            ->label('Fotos de Credencial INE (frente y reverso)')
-                            ->multiple()
-                            ->disk('public_media')
-                            ->directory('Fotos_INE')
-                            ->storeFileNamesIn('nombres_reales')
+                            FileUpload::make('foto_ine_de_frente')
+                            ->label('Foto del FRENTE de Credencial del INE')
+                            ->disk('digitalocean')
+                            ->directory('RedesPueblo/Fotos')
+                            ->storeFileNamesIn('nombre_foto_frente')
                             ->downloadable()
                             ->openable()
                             ->image()
@@ -446,10 +476,25 @@ class ContactoResource extends Resource
                             ->imageCropAspectRatio('16:9')
                             ->imageResizeTargetWidth('640')
                             ->imageResizeTargetHeight('360')
-                            ->maxSize(400)
-                            ->maxFiles(2),
+                            ->maxSize(200),
 
-                            Hidden::make('nombres_reales'),
+                            Hidden::make('nombre_foto_frente'),
+                            
+                            FileUpload::make('foto_ine_de_atras')
+                            ->label('Foto del REVERSO de Credencial del INE')
+                            ->disk('digitalocean')
+                            ->directory('RedesPueblo/Fotos')
+                            ->storeFileNamesIn('nombre_foto_atras')
+                            ->downloadable()
+                            ->openable()
+                            ->image()
+                            ->imageResizeMode('cover')
+                            ->imageCropAspectRatio('16:9')
+                            ->imageResizeTargetWidth('640')
+                            ->imageResizeTargetHeight('360')
+                            ->maxSize(200),
+
+                            Hidden::make('nombre_foto_atras'),
                             
                         ])
                         ->collapsible() 
@@ -479,12 +524,11 @@ class ContactoResource extends Resource
                                 return true;
                             }),
 
-                            DatePicker::make('fecha_afiliacion')
+                            TextInput::make('fecha_afiliacion')
                             ->label('Fecha de Afiliación')
-                            ->format('Y/m/d')
-                            ->displayFormat('d/m/Y')
-                            ->minDate(now()->subYears(20))
-                            ->maxDate(now())
+                            ->mask('9999-99-99')
+                            ->length(10)
+                            ->placeholder('AAAA-MM-DD')
                             ->disabled(function (Get $get) {
                                 $opcion = $get('es_militante');
                                 if (isset($opcion)){
@@ -785,17 +829,26 @@ class ContactoResource extends Resource
     {
         return $table
             ->columns([
+
                 TextColumn::make('id')
                     ->sortable(),
+
                 TextColumn::make('owner_id')
                     ->label('Owns')
                     ->color('primary')
                     ->weight(FontWeight::Bold)
-                    ->sortable(),
+                    ->sortable(),  
+
+                ImageColumn::make('foto_personal')
+                    ->label('Foto')
+                    ->disk('digitalocean')
+                    ->square(),
+
                 TextColumn::make('nombre_completo')
                     ->label('Nombre del Contacto')
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('telefono_movil')
                     ->label('Teléfono Móvil')
                     ->color('success')
@@ -803,13 +856,19 @@ class ContactoResource extends Resource
                     ->size(TextColumn\TextColumnSize::Medium)
                     ->fontFamily(FontFamily::Mono)
                     ->sortable(),
-                TextColumn::make('categoria.nombre')
-                    ->label('Clasificación')
-                    ->sortable(),
-                ImageColumn::make('fotos_del_ine')
-                    ->label('Fotos INE')
+
+                ImageColumn::make('foto_ine_de_frente')
+                    ->label('Frente')
+                    ->disk('digitalocean')
                     ->width(64)
                     ->height(36),
+
+                ImageColumn::make('foto_ine_de_atras')
+                    ->label('Reverso')
+                    ->disk('digitalocean')
+                    ->width(64)
+                    ->height(36),
+
                 TextColumn::make('created_at')
                     ->label('Registrado')
                     ->dateTime()

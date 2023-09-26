@@ -31,6 +31,8 @@ return new class extends Migration
             $table->string('clave_genero', 20)->default('SIN DATOS');
             $table->date('fecha_nacimiento')->nullable();
             $table->string('dato_de_curp', 20)->nullable();
+            $table->string('foto_personal', 255)->nullable();
+            $table->string('nombre_de_foto', 255)->nullable();
 
             $table->foreignId('municipio_id')->constrained('municipios')->default(39);
             $table->unsignedBigInteger('colonia_id')->default(0);
@@ -60,10 +62,13 @@ return new class extends Migration
             $table->string('contacto_otra_red', 60)->nullable();
 
             $table->boolean('tiene_fotos_ine')->default(0);
-            $table->string('fotos_del_ine', 255)->nullable();
-            $table->string('nombres_reales', 255)->nullable();
+            $table->string('foto_ine_de_frente', 255)->nullable();
+            $table->string('nombre_foto_frente', 255)->nullable();
+            $table->string('foto_ine_de_atras', 255)->nullable();
+            $table->string('nombre_foto_atras', 255)->nullable();
             
             $table->boolean('con_domi_actual')->default(0);
+            $table->string('domicilio_credencial', 80)->nullable();
             $table->string('numero_cred_ine', 20)->nullable();
             $table->string('clave_elector', 20)->nullable();
             $table->string('numero_ocr_ine', 20)->nullable();
@@ -73,6 +78,7 @@ return new class extends Migration
             $table->integer('numero_de_ruta')->nullable()->default(0);
             $table->integer('numero_seccion')->nullable()->default(0);
             $table->boolean('seccion_prioritaria')->default(0);
+            $table->boolean('datos_verificados')->default(0);
 
             $table->boolean('es_militante')->default(0);
             $table->string('numero_afiliacion', 20)->nullable();

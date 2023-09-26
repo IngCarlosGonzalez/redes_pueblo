@@ -36,11 +36,6 @@ class Contacto extends Model implements HasMedia
         'con_domi_actual'     => false,
     ];
 
-    protected $casts = [
-        'fotos_del_ine' => 'array',
-        'nombres_reales' => 'array',
-    ];
-
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
