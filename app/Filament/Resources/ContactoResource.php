@@ -56,13 +56,90 @@ class ContactoResource extends Resource
                         Section::make()
                         ->schema([
 
-                            TextInput::make('nombre_completo')
-                            ->label('Nombre Completo')
-                            ->autofocus(fn (): bool => true)
+                            TextInput::make('nombres_contacto')
+                            ->label('Nombres del Contacto')
+                            ->autofocus()
                             ->required()
+                            ->maxLength(30)
                             ->autocomplete(false)
                             ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
-                            ->maxLength(60),
+                            ->live(debounce: 2000)
+                            ->afterStateUpdated(function (Get $get, Set $set, string | NULL $state) {
+                                $cadena = '';
+                                if (isset($state)){
+                                    $cadena = strtoupper($state) . ' ';
+                                }else{
+                                    $cadena = 'XXXXXXXXXX ';
+                                }
+                                if (!empty($get('apellido_paterno'))){
+                                    $cadena = $cadena . strtoupper($get('apellido_paterno')) . ' ';
+                                }else{
+                                    $cadena = $cadena . 'YYYYYYYYYY ';
+                                }
+                                if (!empty($get('apellido_materno'))){
+                                    $cadena = $cadena . strtoupper($get('apellido_materno'));
+                                }else{
+                                    $cadena = $cadena . 'ZZZZZZZZZZ';
+                                }
+                                $set('nombre_en_cadena', $cadena);
+                            }),
+
+                            TextInput::make('apellido_paterno')
+                            ->label('Apellido Paterno')
+                            ->required()
+                            ->maxLength(30)
+                            ->autocomplete(false)
+                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
+                            ->live(debounce: 2000)
+                            ->afterStateUpdated(function (Get $get, Set $set, string | NULL $state) {
+                                $cadena = '';
+                                if (!empty($get('nombres_contacto'))){
+                                    $cadena = strtoupper($get('nombres_contacto')) . ' ';
+                                }else{
+                                    $cadena = 'XXXXXXXXXX ';
+                                }
+                                if (isset($state)){
+                                    $cadena = $cadena . strtoupper($state) . ' ';
+                                }else{
+                                    $cadena = $cadena . 'YYYYYYYYYY ';
+                                }
+                                if (!empty($get('apellido_materno'))){
+                                    $cadena = $cadena . strtoupper($get('apellido_materno'));
+                                }else{
+                                    $cadena = $cadena . 'ZZZZZZZZZZ';
+                                }
+                                $set('nombre_en_cadena', $cadena);
+                            }),
+                            
+                            TextInput::make('apellido_materno')
+                            ->label('Apellido Materno')
+                            ->required()
+                            ->maxLength(30)
+                            ->autocomplete(false)
+                            ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
+                            ->live(debounce: 2000)
+                            ->afterStateUpdated(function (Get $get, Set $set, string | NULL $state) {
+                                $cadena = '';
+                                if (!empty($get('nombres_contacto'))){
+                                    $cadena = strtoupper($get('nombres_contacto')) . ' ';
+                                }else{
+                                    $cadena = 'XXXXXXXXXX ';
+                                }
+                                if (!empty($get('apellido_paterno'))){
+                                    $cadena = $cadena . strtoupper($get('apellido_paterno')) . ' ';
+                                }else{
+                                    $cadena = $cadena . 'YYYYYYYYYY ';
+                                }
+                                if (isset($state)){
+                                    $cadena = $cadena . strtoupper($state);
+                                }else{
+                                    $cadena = $cadena . 'ZZZZZZZZZZ';
+                                }
+                                $set('nombre_en_cadena', $cadena);
+                            }),
+                            
+                            Hidden::make('nombre_en_cadena')
+                            ->live(),
                             
                             Select::make('clave_genero')
                             ->options([
@@ -90,6 +167,12 @@ class ContactoResource extends Resource
                                 return 'n/a';
                             }),
 
+                            Select::make('categoria_id')
+                            ->relationship('categoria', 'nombre')
+                            ->preload()
+                            ->live(onBlur: true)
+                            ->required(),
+                
                             Select::make('clave_origen')
                             ->options([
                                 'OFICINAS'    => 'OFICINAS',
@@ -99,17 +182,12 @@ class ContactoResource extends Resource
                                 'OTROS'       => 'OTROS',
                             ])
                             ->required()
-                            ->live()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn (Set $set) => $set('owner_id', auth()->user()->id)),
 
                             Hidden::make('owner_id')
                             ->live(),
 
-                            Select::make('categoria_id')
-                            ->relationship('categoria', 'nombre')
-                            ->preload()
-                            ->required(),
-                
                         ])
                         ->compact()
                         ->columns(1),
@@ -118,10 +196,12 @@ class ContactoResource extends Resource
                         ->label('Foto de la Persona')
                         ->disk('digitalocean')
                         ->directory('RedesPueblo/Fotos')
+                        ->visibility('public')
                         ->storeFileNamesIn('nombre_de_foto')
                         ->downloadable()
                         ->openable()
                         ->image()
+                        ->imageEditor()
                         ->imageResizeMode('cover')
                         ->imageCropAspectRatio('1:1')
                         ->imageResizeTargetWidth('300')
@@ -139,7 +219,7 @@ class ContactoResource extends Resource
                             ->label('Municipio')
                             ->options(Municipio::all()->pluck('nombre', 'id')->toArray())
                             ->required()
-                            ->live()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(fn (Set $set) => $set('colonia_id', null)),
 
                             Select::make('colonia_id')
@@ -151,11 +231,9 @@ class ContactoResource extends Resource
                                     return $mpio->colonias->pluck('nombre_colonia', 'id');
                                 }
                             })
-                            ->live()
+                            ->live(onBlur: true)
                             ->afterStateUpdated(function (Get $get, Set $set) {
                                 $set('colonia_catalogada', true);
-                                $set('domicilio_colonia', 'n/a');
-                                $set('domicilio_codpost', '-----');
                                 $set('con_domi_actual', 0);
                                 $set('distrito_federal', 0);
                                 $set('distrito_estatal', 0);
@@ -165,6 +243,7 @@ class ContactoResource extends Resource
                                 $set('datos_verificados', false);
                                 $lacolonia = Colonia::find($get('colonia_id'));
                                 if($lacolonia){
+                                    $set('domicilio_colonia', $lacolonia->nombre_colonia);
                                     $set('domicilio_codpost', $lacolonia->cod_post_colon);
                                 }
                             }),
@@ -178,7 +257,7 @@ class ContactoResource extends Resource
                             ->live(),
 
                             TextInput::make('domicilio_colonia')
-                            ->label('Colonia No Catalogada')
+                            ->label('Nombre de la Colonia')
                             ->maxLength(60)
                             ->live()
                             ->disabled(function (Get $get) {
@@ -195,11 +274,19 @@ class ContactoResource extends Resource
                                 return 'n/a';
                             }),
 
-                            TextInput::make('domicilio_completo')
-                            ->label('Domicilio Calle y Número')
-                            ->maxLength(80)
+                            TextInput::make('domicilio_calle')
+                            ->label('Nombre de la Calle')
+                            ->maxLength(60)
                             ->dehydrateStateUsing(fn (string $state): string => strtoupper($state))
                             ->required(),
+
+                            TextInput::make('domicilio_numext')
+                            ->label('Número en Exterior')
+                            ->maxLength(10),
+
+                            TextInput::make('domicilio_numint')
+                            ->label('Número de Interior')
+                            ->maxLength(10),
 
                             TextInput::make('domicilio_codpost')
                             ->label('Código Postal')
@@ -834,19 +921,21 @@ class ContactoResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('owner_id')
-                    ->label('Owns')
-                    ->color('primary')
-                    ->weight(FontWeight::Bold)
+                    ->label('User')
+                    ->badge()
+                    ->color('warning')
                     ->sortable(),  
 
                 ImageColumn::make('foto_personal')
                     ->label('Foto')
                     ->disk('digitalocean')
-                    ->square(),
+                    ->size(40)
+                    ->circular(),
 
-                TextColumn::make('nombre_completo')
+                TextColumn::make('nombre_en_cadena')
                     ->label('Nombre del Contacto')
                     ->searchable()
+                    ->wrap()
                     ->sortable(),
 
                 TextColumn::make('telefono_movil')
@@ -857,17 +946,14 @@ class ContactoResource extends Resource
                     ->fontFamily(FontFamily::Mono)
                     ->sortable(),
 
-                ImageColumn::make('foto_ine_de_frente')
-                    ->label('Frente')
-                    ->disk('digitalocean')
-                    ->width(64)
-                    ->height(36),
-
-                ImageColumn::make('foto_ine_de_atras')
-                    ->label('Reverso')
-                    ->disk('digitalocean')
-                    ->width(64)
-                    ->height(36),
+                TextColumn::make('cuenta_de_correo')
+                    ->label('Correo Electrónico')
+                    ->searchable()
+                    ->wrap()
+                    ->copyable()
+                    ->copyMessage('Dirección de Correo Copiada...')
+                    ->copyMessageDuration(2000)
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Registrado')

@@ -34,6 +34,7 @@ class Contacto extends Model implements HasMedia
         'numero_de_ruta'      => 0,
         'numero_seccion'      => 0,
         'con_domi_actual'     => false,
+        'datos_verificados'   => false,
     ];
 
     public function categoria(): BelongsTo

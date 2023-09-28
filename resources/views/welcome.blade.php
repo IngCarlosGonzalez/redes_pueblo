@@ -15,7 +15,7 @@
                         </h2>
 
                         <div class="mx-auto mb-2 md:col-span-4 animate-pulse">
-                            <img src="{{ asset('/logos/gente.jpg') }}" alt="Redes-Pueblo" width="600">
+                            <img src="/logos/gente.jpg" alt="Redes-Pueblo" width="600">
                         </div>
                         
                         <div class="mt-12 ml-24 space-x-8 md:col-span-4 md:ml-48 lg:ml-60">

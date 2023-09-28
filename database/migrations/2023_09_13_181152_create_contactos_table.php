@@ -27,7 +27,10 @@ return new class extends Migration
             $table->string('clave_origen', 20)->default('OTROS');
             $table->foreignId('categoria_id')->constrained('categorias')->default(1);
 
-            $table->string('nombre_completo', 60)->nullable();
+            $table->string('nombres_contacto', 30)->nullable();
+            $table->string('apellido_paterno', 30)->nullable();
+            $table->string('apellido_materno', 30)->nullable();
+            $table->string('nombre_en_cadena', 80)->nullable();
             $table->string('clave_genero', 20)->default('SIN DATOS');
             $table->date('fecha_nacimiento')->nullable();
             $table->string('dato_de_curp', 20)->nullable();
@@ -38,7 +41,9 @@ return new class extends Migration
             $table->unsignedBigInteger('colonia_id')->default(0);
             $table->boolean('colonia_catalogada')->default(1);
             $table->string('domicilio_colonia', 60)->nullable();
-            $table->string('domicilio_completo', 80)->nullable();
+            $table->string('domicilio_calle',   60)->nullable();
+            $table->string('domicilio_numext',  10)->nullable();
+            $table->string('domicilio_numint',  10)->nullable();
             $table->string('domicilio_codpost', 10)->nullable();
 
             $table->boolean('tiene_celular')->default(0);
