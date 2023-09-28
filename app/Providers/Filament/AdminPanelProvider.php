@@ -56,7 +56,7 @@ class AdminPanelProvider extends PanelProvider
                     ->label('CATALOGOS')
                     ->collapsed(fn (): bool => true),
                 NavigationGroup::make()
-                    ->label('CAPTURA'),
+                    ->label('REGISTRO'),
             ])
             ->middleware([
                 EncryptCookies::class,
