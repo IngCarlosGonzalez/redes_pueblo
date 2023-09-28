@@ -1,0 +1,36 @@
+# This is a basic workflow that is manually triggered (CARLOS)
+
+name: Deploy Push (Push to Branch)
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI or API.
+
+on:
+
+  push:
+   branches:
+     - main
+
+jobs:
+    
+    deploy:
+     name: Deployment
+     runs-on: ubuntu-latest
+     
+     steps:
+       - uses: actions/checkout@v2
+       
+       - name: Setup PHP
+         uses: shivammathur/setup-php@v2
+         with:
+           php-version: 8.1
+           
+       - name: Install Dependencies
+         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
+         
+       - name: Deploy
+         uses: deployphp/action@master
+         with:
+           private-key: ${{ secrets.PRIVATE_KEY }}
+           known_hosts: ${{ secrets.KNOWN_HOSTS }}
+           dep: deploy digitalocean -v
+      
