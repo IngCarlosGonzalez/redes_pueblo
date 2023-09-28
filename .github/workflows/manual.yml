@@ -22,12 +22,11 @@ on:
 jobs:
   # This workflow contains a single job called "greet"
   deploy:
+    name: Deployment
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    
     steps:
-       - name: Despliegue
-         uses: actions/checkout@v
+       - uses: actions/checkout@v2
        
        - name: Setup PHP
          uses: shivammathur/setup-php@v2
