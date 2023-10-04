@@ -86,5 +86,10 @@ class CategoriaSeeder extends Seeder
                 'nombre' => 'OTROS',
             ]
         );
+        Categoria::create(
+            [
+                'nombre' => 'Xconvertir',
+            ]
+        );
     }
 }

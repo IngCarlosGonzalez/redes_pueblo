@@ -32,7 +32,7 @@ class CategoriaResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nombre')
-                    ->disabled()
+                    ->disabled(fn (string $operation): bool => $operation === 'edit')
             ]);
     }
 

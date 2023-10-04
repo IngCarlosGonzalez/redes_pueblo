@@ -66,7 +66,13 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $appends = [
         'profile_photo_url',
+        'bandera',
     ];
+
+    public function getBanderaAttribute()
+    {
+        return true;
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {

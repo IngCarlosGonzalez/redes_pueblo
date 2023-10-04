@@ -11,6 +11,11 @@ class EditContacto extends EditRecord
 {
     protected static string $resource = ContactoResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->previousUrl ?? $this->getResource()::getUrl('index');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -27,11 +32,6 @@ class EditContacto extends EditRecord
             ->iconColor('warning')
             ->title('CONTACTO ALMACENADO OK')
             ->body('El contacto ha sido actualizado correctamente.');
-    }
-
-    protected function getRedirectUrl(): string
-    {
-        return $this->previousUrl ?? $this->getResource()::getUrl('index');
     }
 
 }

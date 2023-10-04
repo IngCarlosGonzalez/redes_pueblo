@@ -38,11 +38,11 @@ class ContactoResource extends Resource
 
     protected static ?string $modelLabel = 'Contactos';
 
-    protected static ?string $navigationLabel = 'Contactos';
+    protected static ?string $navigationLabel = 'Registro';
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
-    protected static ?string $navigationGroup = 'REGISTRO';
+    protected static ?string $navigationGroup = 'CONTACTOS';
 
     protected static ?int $navigationSort = 1; 
 
@@ -224,11 +224,15 @@ class ContactoResource extends Resource
 
                             Select::make('colonia_id')
                             ->label('Colonia')
+                            ->loadingMessage('Cargando Colonias...')
                             ->searchable()
+                            ->searchPrompt('Buscar la Colonia con parte de su nombre...')
+                            ->searchingMessage('Buscando la Colonia...')
+                            ->noSearchResultsMessage('No encontró la Colonia.')
                             ->options(function (Get $get) {
                                 $mpio = Municipio::find($get('municipio_id'));
                                 if($mpio){
-                                    return $mpio->colonias->pluck('nombre_colonia', 'id');
+                                    return $mpio->colonias->pluck('detallado', 'id');
                                 }
                             })
                             ->live(onBlur: true)
@@ -253,7 +257,8 @@ class ContactoResource extends Resource
                             ->inline(false)
                             ->onColor('success')
                             ->offColor('danger')
-                            ->required()
+                            ->disabled()
+                            ->dehydrated()
                             ->live(),
 
                             TextInput::make('domicilio_colonia')
@@ -921,7 +926,7 @@ class ContactoResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('owner_id')
-                    ->label('User')
+                    ->label('Owner')
                     ->badge()
                     ->color('warning')
                     ->sortable(),  

@@ -32,4 +32,17 @@ class Colonia extends Model
         return $this->belongsTo(Municipio::class);
     }
 
+    /**
+     * Appends
+     * @var array
+     */
+    protected $appends = [
+        'detallado',
+    ];
+
+    public function getDetalladoAttribute()
+    {
+        return $this->nombre_colonia . '    -- Sección: ' . strval($this->seccion) . ' -- ';
+    }
+
 }

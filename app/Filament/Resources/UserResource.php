@@ -5,15 +5,19 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\TextColumn\TextColumnSize;
@@ -65,6 +69,10 @@ class UserResource extends Resource
                             ->placeholder('aqui la cuenta')
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
+
+                        Hidden::make('bandera')
+                        ->dehydrated(false),
+
                         TextInput::make('password')
                             ->label('Contraseña')
                             ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
@@ -77,7 +85,16 @@ class UserResource extends Resource
                             ->autocomplete(false)
                             ->default('')
                             ->placeholder('aqui la password')
-                            ->minLength(8),
+                            ->minLength(8)
+                            ->password(fn (Get $get): bool => $get('bandera'))
+                            ->suffixActions([
+                                Action::make('verPassword')
+                                    ->icon('heroicon-m-eye')
+                                    ->action(fn (Set $set) => $set('bandera', false)),
+                                Action::make('noverPassword')
+                                    ->icon('heroicon-m-eye-slash')
+                                    ->action(fn (Set $set) => $set('bandera', true)),
+                            ]),
                         Toggle::make('is_active')
                             ->label('Activo?')
                             ->inline(false)
@@ -103,6 +120,7 @@ class UserResource extends Resource
                             ])
                             ->required(), 
                         Select::make('roles')
+                            ->label('Rol Principal')
                             ->relationship('roles', 'name')
                             ->preload()
                             ->required(),

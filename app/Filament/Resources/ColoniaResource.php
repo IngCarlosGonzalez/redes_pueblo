@@ -5,14 +5,18 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Colonia;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ColoniaResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ColoniaResource\RelationManagers;
@@ -37,72 +41,86 @@ class ColoniaResource extends Resource
             ->schema([
                 Section::make('Datos de la Colonia')
                     ->schema([
+
                         TextInput::make('codigo')
                             ->label('Codigo del INE')
                             ->autofocus()
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(10),
+
                         TextInput::make('entidad')
                             ->label('Número de Entidad')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(2),
+
                         Select::make('municipio_id')
                             ->relationship('municipio', 'nombre')
                             ->searchable()
                             ->preload()
                             ->required(),
+
                         TextInput::make('nombre_mpio')
                             ->label('Nombre de Municipio')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(30),
+
                         TextInput::make('distrito_fed')
                             ->label('Número Distrito Federal')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(5),
+
                         TextInput::make('distrito_local')
                             ->label('Número Distrito Local')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(5),
+
                         TextInput::make('numero_de_ruta')
                             ->label('Número de la Ruta')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(5),
+                            
                         TextInput::make('seccion')
                             ->label('Número de Sección')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(5),
+
                         TextInput::make('tipo_seccion')
                             ->label('Tipo de la Sección')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(20),
+
                         TextInput::make('tipo_colonia')
                             ->label('Tipo de Colonia')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(30),
+
                         TextInput::make('nombre_colonia')
                             ->label('Nombre de la Colonia')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(60),
+
                         TextInput::make('cod_post_colon')
                             ->label('Código Postal')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(5),
+
                         TextInput::make('num_control')
                             ->label('Número de Control')
                             ->required()
                             ->autocomplete(false)
                             ->maxLength(10),
+                            
                         ])
                     ->columns(1)
 
