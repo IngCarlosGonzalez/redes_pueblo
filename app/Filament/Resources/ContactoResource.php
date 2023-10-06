@@ -20,12 +20,14 @@ use Filament\Forms\Components\Section;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use App\Filament\Resources\ContactoResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
@@ -142,6 +144,7 @@ class ContactoResource extends Resource
                             ->live(),
                             
                             Select::make('clave_genero')
+                            ->label('Género Personal')
                             ->options([
                                 'FEMENINO'   => 'FEMENINO',
                                 'MASCULINO'  => 'MASCULINO',
@@ -168,12 +171,14 @@ class ContactoResource extends Resource
                             }),
 
                             Select::make('categoria_id')
+                            ->label('Clasificación')
                             ->relationship('categoria', 'nombre')
                             ->preload()
                             ->live(onBlur: true)
                             ->required(),
                 
                             Select::make('clave_origen')
+                            ->label('Origen del Registro')
                             ->options([
                                 'OFICINAS'    => 'OFICINAS',
                                 'BRIGADEO'    => 'BRIGADEO',
@@ -974,11 +979,15 @@ class ContactoResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    //
+                    /* BulkAction::make('Eliminar')
+                        ->requiresConfirmation()
+                        ->action(fn (Collection $records) => $records->each->delete())
+                        ->deselectRecordsAfterCompletion(), */
                 ]),
             ])
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->createAnother(false),
             ]);
     }
     

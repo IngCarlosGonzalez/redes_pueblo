@@ -91,5 +91,10 @@ class CategoriaSeeder extends Seeder
                 'nombre' => 'Xconvertir',
             ]
         );
+        Categoria::create(
+            [
+                'nombre' => 'Organizador',
+            ]
+        );
     }
 }

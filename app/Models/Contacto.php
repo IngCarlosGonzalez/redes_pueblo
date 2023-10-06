@@ -37,14 +37,19 @@ class Contacto extends Model implements HasMedia
         'datos_verificados'   => false,
     ];
 
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
     public function categoria(): BelongsTo
     {
-        return $this->belongsTo(Categoria::class);
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 
     public function municipio(): BelongsTo
     {
-        return $this->belongsTo(Municipio::class);
+        return $this->belongsTo(Municipio::class, 'municipio_id');
     }
 
     public function registerMediaConversions(Media $media = null): void
