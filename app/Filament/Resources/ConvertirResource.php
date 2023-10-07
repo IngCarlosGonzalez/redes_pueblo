@@ -142,9 +142,10 @@ class ConvertirResource extends Resource
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
-                                                $set('requerimiento', 'Registro...' . $ident);
+                                                $set('mensaje', 'Registro...' . $ident);
                                                 $nivel = $get('nivel_en_red');
                                                 if ($nivel < 3) {
+                                                    $set('mensaje', 'Niveles mayores no elegibles');
                                                     return true;
                                                 }
                                                 if ($nivel == 5) {
@@ -154,16 +155,16 @@ class ConvertirResource extends Resource
                                                 } else {
                                                     $nuevo = 2;
                                                 }
-                                                //$catego = 16;
+                                                $catego = 16;
                                                 if ($get('tiene_celular') && $get('tiene_correo')) {
-                                                    //$set('categoría_id', $catego);
-                                                    //$affected = DB::update('update contactos set categoria_id = 16 where id = :id', ['id' => $ident]);
-                                                    //$set('requerimiento', 'Updated...' . $affected);
+                                                    $set('categoria_id', $catego);
                                                     $set('nivel_en_red', $nuevo);
                                                     $set('clave_tipo', 'Organizador');
-                                                    $set('requerimiento', 'Click en guardar...');
+                                                    $set('mensaje', 'Click en guardar...');
+                                                    return true;
                                                 } else {
-                                                    $set('requerimiento', 'LE FALTAN DATOS');
+                                                    $set('mensaje', '>>> LE FALTAN MEDIOS DE CONTACTO <<<');
+                                                    return true;
                                                 }
                                             }),
 
@@ -174,9 +175,11 @@ class ConvertirResource extends Resource
                                             ->action(function (Get $get, Set $set) {
                                                 $nivel = $get('nivel_en_red');
                                                 if ($nivel < 2) {
+                                                    $set('mensaje', 'Nivel máximo no elegible');
                                                     return true;
                                                 }
                                                 if ($nivel > 4) {
+                                                    $set('mensaje', 'Nivel ya es el mínimo');
                                                     return true;
                                                 }
                                                 if ($nivel == 2) {
@@ -188,14 +191,16 @@ class ConvertirResource extends Resource
                                                 }
                                                 if ($get('tiene_celular') && $get('tiene_correo')) {
                                                     $set('nivel_en_red', $nuevo);
-                                                    //$catego = 15;
+                                                    $catego = 15;
                                                     if ($nuevo == 5) {
-                                                        //$set('categoría_id', $catego);
+                                                        $set('categoria_id', $catego);
                                                         $set('clave_tipo', 'Integrante');
                                                     }
-                                                    $set('requerimiento', 'Click en guardar...');
+                                                    $set('mensaje', 'Click en guardar...');
+                                                    return true;
                                                 } else {
-                                                    $set('requerimiento', 'LE FALTAN DATOS');
+                                                    $set('mensaje', '>>> LE FALTAN MEDIOS DE CONTACTO <<<');
+                                                    return true;
                                                 }
                                             }),
 
@@ -206,8 +211,8 @@ class ConvertirResource extends Resource
 
                                 Section::make()
                                 ->schema([
-                                    TextInput::make('requerimiento')
-                                    ->label('Atención:')
+                                    TextInput::make('mensaje')
+                                    ->label('M E N S A J E :')
                                     ->disabled()
                                     ->live()
                                     ->dehydrated(false),
@@ -265,11 +270,6 @@ class ConvertirResource extends Resource
                     ->copyMessageDuration(2000)
                     ->sortable(),
 
-                /* TextColumn::make('created_at')
-                    ->label('Registrado')
-                    ->dateTime()
-                    ->sortable()
-                    ->since(), */
             ])
             ->filters([
                 //

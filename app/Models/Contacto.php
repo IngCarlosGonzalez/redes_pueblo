@@ -60,4 +60,19 @@ class Contacto extends Model implements HasMedia
             ->nonQueued();
     }
 
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'mensaje',
+    ];
+
+    public function getMensajeAttribute()
+    {
+        return '_______________';
+    }
+
+
 }

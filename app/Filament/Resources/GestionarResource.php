@@ -16,6 +16,7 @@ use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Section;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
@@ -32,7 +33,7 @@ use App\Filament\Resources\GestionarResource\Pages\CreateGestionar;
 class GestionarResource extends Resource
 {
     protected static ?string $model = Contacto::class;
-    protected static ?string $modelLabel = 'Organizador';
+    protected static ?string $modelLabel = 'Organizadores';
     protected static ?string $navigationLabel = 'Gestionar';
     protected static ?string $navigationIcon = 'heroicon-m-cog';
     protected static ?string $navigationGroup = 'CONTACTOS';
@@ -58,10 +59,8 @@ class GestionarResource extends Resource
 
                             ->schema([
 
-                                Hidden::make('id'),
-
                                 TextInput::make('nombre_en_cadena')
-                                ->label('Nombre del Organizador')
+                                ->label('Nombre Completo')
                                 ->prefixIcon('heroicon-m-user')
                                 ->disabled(),
 
@@ -115,72 +114,161 @@ class GestionarResource extends Resource
                                 ->compact()
                                 ->columns(1),
 
-                                Section::make('Gestiones Disponibles')
-                                ->description('Seleccionar la Operación por Aplicar')
+                                Section::make('SOLICITUDES AL ADMINISTRADOR')
+                                ->description('Dar Click en la Acción por Solicitar')
                                 ->schema([
 
                                     Actions::make([
 
-                                        Action::make('ACCIÖN # 1')
-                                            ->icon('heroicon-m-chevron-double-up')
+                                        Action::make('Asignar Usuario')
+                                            ->icon('heroicon-m-user-plus')
+                                            ->color('info')
+                                            ->requiresConfirmation()
+                                            ->action(function (Get $get, Set $set) {
+                                                $ident = $get('id');
+                                                $set('mensaje', 'Registro...' . $ident);
+                                                $nivel = $get('nivel_en_red');
+                                                if ($nivel > 4) {
+                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if ($nivel < 2) {
+                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if ($get('tiene_usuario')) {
+                                                    if ($get('user_asignado') > 0) {
+                                                        $eluser = $get('user_asignado');
+                                                        $set('mensaje', 'El organizador ya tiene asignado usuario ' . $eluser . '... No procede. ');
+                                                        return true;
+                                                    }
+                                                }
+                                                if ($get('tiene_celular') && $get('tiene_correo')) {
+                                                    $set('mensaje', 'Procede a registrar la solicitud... Asignar Usuario.');
+                                                    // aqui va el codigo
+
+                                                    return true;
+                                                } else {
+                                                    $set('mensaje', 'Al organizador le falta Teléfono o Correo... No procede.');
+                                                    return true;
+                                                }
+                                            }),
+
+                                        Action::make('Desactivar Usuario')
+                                            ->icon('heroicon-m-arrow-down-on-square')
+                                            ->color('warning')
+                                            ->requiresConfirmation()
+                                            ->action(function (Get $get, Set $set) {
+                                                $ident = $get('id');
+                                                $set('mensaje', 'Registro...' . $ident);
+                                                $nivel = $get('nivel_en_red');
+                                                if ($nivel > 4) {
+                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if ($nivel < 2) {
+                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if (!$get('tiene_usuario')) {
+                                                    $set('mensaje', 'El organizador no tiene usuario de sistema... No procede.');
+                                                    return true;
+                                                } else {
+                                                    if (!$get('user_asignado') > 0) {
+                                                        $set('mensaje', 'El organizador no tiene usuario válido... No procede.');
+                                                        return true;
+                                                    } else {
+                                                        $eluser = $get('user_asignado');
+                                                        if (!$get('user_vigente')) {
+                                                            $set('mensaje', 'El usuario ya está desactivado... No procede.');
+                                                            return true;
+                                                        } else {
+                                                            $set('mensaje', 'El usuario ' . $eluser . ' requiere ser desactivado.');
+                                                        }
+                                                    }
+                                                }
+                                                $set('mensaje', 'Procede a registrar la solicitud... Desactivación.');
+                                                // aqui va el codigo
+
+                                                return true;
+                                            }),
+
+                                        Action::make('Reactivar Usuario')
+                                            ->icon('heroicon-m-arrow-up-on-square')
                                             ->color('success')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
-                                                $set('requerimiento', 'Registro...' . $ident);
+                                                $set('mensaje', 'Registro...' . $ident);
                                                 $nivel = $get('nivel_en_red');
-                                                if ($nivel < 4) {
+                                                if ($nivel > 4) {
+                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
                                                     return true;
                                                 }
-                                                if ($nivel > 2) {
+                                                if ($nivel < 2) {
+                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
                                                     return true;
                                                 }
-                                                if ($get('tiene_celular') && $get('tiene_correo')) {
-                                                    $set('requerimiento', 'Si tiene requisitos');
+                                                if (!$get('tiene_usuario')) {
+                                                    $set('mensaje', 'El organizador no tiene usuario de sistema... No procede.');
+                                                    return true;
                                                 } else {
-                                                    $set('requerimiento', 'No tiene requisitos');
+                                                    if (!$get('user_asignado') > 0) {
+                                                        $set('mensaje', 'El organizador no tiene usuario válido... No procede.');
+                                                        return true;
+                                                    } else {
+                                                        $eluser = $get('user_asignado');
+                                                        if ($get('user_vigente')) {
+                                                            $set('mensaje', 'El usuario ya está activado... No procede.');
+                                                            return true;
+                                                        } else {
+                                                            $set('mensaje', 'El usuario ' . $eluser . ' requiere su reactivación.');
+                                                        }
+                                                    }
                                                 }
+                                                $set('mensaje', 'Procede a registrar la solicitud... Reactivación');
                                                 // aqui va el codigo
+
+                                                return true;
                                             }),
 
-                                        Action::make('ACCIÓN # 2')
-                                            ->icon('heroicon-m-chevron-double-down')
-                                            ->color('info')
+                                        Action::make('Cambiar Password')
+                                            ->icon('heroicon-m-key')
+                                            ->color('gray')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
+                                                $ident = $get('id');
+                                                $set('mensaje', 'Registro...' . $ident);
                                                 $nivel = $get('nivel_en_red');
-                                                if ($nivel < 4) {
+                                                if ($nivel > 4) {
+                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
                                                     return true;
                                                 }
-                                                if ($nivel > 2) {
+                                                if ($nivel < 2) {
+                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
                                                     return true;
                                                 }
-                                                if ($get('tiene_celular') && $get('tiene_correo')) {
-                                                    $set('requerimiento', 'Si tiene requisitos');
+                                                if (!$get('tiene_usuario')) {
+                                                    $set('mensaje', 'El organizador no tiene usuario de sistema... No procede.');
+                                                    return true;
                                                 } else {
-                                                    $set('requerimiento', 'No tiene requisitos');
+                                                    if (!$get('user_asignado') > 0) {
+                                                        $set('mensaje', 'El organizador no tiene usuario válido... No procede.');
+                                                        return true;
+                                                    } else {
+                                                        $eluser = $get('user_asignado');
+                                                        if (!$get('user_vigente')) {
+                                                            $set('mensaje', 'El usuario está desactivado... No procede.');
+                                                            return true;
+                                                        } else {
+                                                            $set('mensaje', 'El usuario ' . $eluser . ' requiere cambio de password.');
+                                                        }
+                                                    }
                                                 }
+                                                $set('mensaje', 'Procede a registrar la solicitud... Nueva Password.');
                                                 // aqui va el codigo
-                                            }),
 
-                                        Action::make('ACCIÓN # 3')
-                                            ->icon('heroicon-m-chevron-double-left')
-                                            ->color('warning')
-                                            ->requiresConfirmation()
-                                            ->action(function (Get $get, Set $set) {
-                                                $nivel = $get('nivel_en_red');
-                                                if ($nivel < 4) {
-                                                    return true;
-                                                }
-                                                if ($nivel > 2) {
-                                                    return true;
-                                                }
-                                                if ($get('tiene_celular') && $get('tiene_correo')) {
-                                                    $set('requerimiento', 'Si tiene requisitos');
-                                                } else {
-                                                    $set('requerimiento', 'No tiene requisitos');
-                                                }
-                                                // aqui va el codigo
+                                                return true;
                                             }),
 
                                     ])->fullWidth(),
@@ -188,10 +276,103 @@ class GestionarResource extends Resource
                                 ])
                                 ->columns(1),
 
+                                Section::make('OPERACIONES DE REVERSA')
+                                ->aside() 
+                                ->description('Para cuando el organizador deja de serlo')
+                                ->schema([
+
+                                    Actions::make([
+
+                                        Action::make('Desvincular Contactos')
+                                            ->icon('heroicon-m-archive-box-x-mark')
+                                            ->color('danger')
+                                            ->requiresConfirmation()
+                                            ->action(function (Get $get, Set $set) {
+                                                $ident = $get('id');
+                                                $set('mensaje', 'Registro...' . $ident);
+                                                $nivel = $get('nivel_en_red');
+                                                if ($nivel > 4) {
+                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if ($nivel < 2) {
+                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if (!$get('tiene_usuario')) {
+                                                    $set('mensaje', 'El organizador no tiene usuario de sistema... No procede.');
+                                                    return true;
+                                                } else {
+                                                    if (!$get('user_asignado') > 0) {
+                                                        $set('mensaje', 'El organizador no tiene usuario válido... No procede.');
+                                                        return true;
+                                                    } else {
+                                                        $eluser = $get('user_asignado');
+                                                        if ($get('user_vigente')) {
+                                                            $set('mensaje', 'El usuario aún está activo... Desactivarlo primero.');
+                                                            return true;
+                                                        }
+                                                    }
+                                                }
+                                                $hijos = Contacto::where('owner_id', $eluser)->count();
+                                                if ($hijos > 0) {
+                                                    $set('mensaje', 'Si tiene contactos vinculados... ' . $hijos);
+                                                    // aqui va el codigo
+
+                                                    return true;
+                                                } else {
+                                                    $set('mensaje', 'El usuario no tiene contactos vinculados... No procede.');
+                                                    return true;
+                                                }
+                                            }),
+
+                                        Action::make('Retirar el Nivel')
+                                            ->icon('heroicon-m-arrow-long-down')
+                                            ->color('danger')
+                                            ->requiresConfirmation()
+                                            ->action(function (Get $get, Set $set) {
+                                                $ident = $get('id');
+                                                $set('mensaje', 'Registro...' . $ident);
+                                                $nivel = $get('nivel_en_red');
+                                                if ($nivel > 4) {
+                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if ($nivel < 2) {
+                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
+                                                    return true;
+                                                }
+                                                if ($get('tiene_usuario')) {
+                                                    if ($get('user_asignado') > 0) {
+                                                        $eluser = $get('user_asignado');
+                                                        if ($get('user_vigente')) {
+                                                            $set('mensaje', 'El usuario aún está activo... Desactivarlo primero.');
+                                                            return true;
+                                                        } else {
+                                                            $hijos = Contacto::where('owner_id', $eluser)->count();
+                                                            if ($hijos > 0) {
+                                                                $set('mensaje', 'No procede pues aún tiene contactos.');
+                                                                return true;
+                                                            } else {
+                                                                $set('mensaje', 'Si se puede regresar a nivel mínimo.');
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                $set('mensaje', 'Procede a regresar a nivel mínimo...');
+                                                // aqui va el codigo
+
+                                                return true;
+                                            }),
+                                    ])->fullWidth(),
+
+                                ])
+                                ->columns(1),
+
                                 Section::make()
                                 ->schema([
-                                    TextInput::make('requerimiento')
-                                    ->label('Atención:')
+                                    TextInput::make('mensaje')
+                                    ->label('M E N S A J E :')
                                     ->disabled()
                                     ->live()
                                     ->dehydrated(false),
@@ -211,11 +392,10 @@ class GestionarResource extends Resource
         return $table
             ->columns([
 
-                TextColumn::make('id')
-                    ->sortable(),
+                TextColumn::make('id'),
 
                 TextColumn::make('owner_id')
-                    ->label('Owner')
+                    ->label('Ownr')
                     ->badge()
                     ->color('warning')
                     ->sortable(),  
@@ -226,8 +406,14 @@ class GestionarResource extends Resource
                     ->size(40)
                     ->circular(),
 
+                TextColumn::make('nombre_en_cadena')
+                    ->label('Nombre del Contacto')
+                    ->searchable()
+                    ->wrap()
+                    ->sortable(),
+
                 SelectColumn::make('nivel_en_red')
-                    ->label('---Nivel')
+                    ->label('Nivel en Red')
                     ->options([
                         '2' => 'COORD',
                         '3' => 'OPERS',
@@ -236,28 +422,36 @@ class GestionarResource extends Resource
                     ->disabled()
                     ->selectablePlaceholder(false),
 
-                TextColumn::make('nombre_en_cadena')
-                    ->label('Nombre del Contacto')
-                    ->searchable()
-                    ->wrap()
-                    ->sortable(),
+                IconColumn::make('con_req_admin')
+                    ->label('Solicitud?')
+                    ->boolean(),
 
-                TextColumn::make('telefono_movil')
-                    ->label('Teléfono Móvil')
+                TextColumn::make('requerimiento')
+                    ->label('Requerimiento'),
+
+                IconColumn::make('con_req_listo')
+                    ->label('Atendida?')
+                    ->boolean(),
+
+                IconColumn::make('tiene_usuario')
+                    ->label('Usuario?')
+                    ->boolean(),
+
+                TextColumn::make('user_asignado')
+                    ->label('Id User')
+                    ->badge()
                     ->color('success')
-                    ->weight(FontWeight::Bold)
-                    ->size(TextColumn\TextColumnSize::Medium)
-                    ->fontFamily(FontFamily::Mono)
-                    ->sortable(),
+                    ->sortable(),  
 
-                TextColumn::make('cuenta_de_correo')
-                    ->label('Correo Electrónico')
-                    ->searchable()
-                    ->wrap()
-                    ->copyable()
-                    ->copyMessage('Dirección de Correo Copiada...')
-                    ->copyMessageDuration(2000)
-                    ->sortable(),
+                IconColumn::make('user_vigente')
+                    ->label('Activo?')
+                    ->boolean(),
+
+                TextColumn::make('updated_at')
+                    ->label('Actualizado')
+                    ->dateTime()
+                    ->sortable()
+                    ->since(),
 
             ])
             ->filters([
