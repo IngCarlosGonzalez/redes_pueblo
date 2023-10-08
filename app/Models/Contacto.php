@@ -67,11 +67,17 @@ class Contacto extends Model implements HasMedia
      */
     protected $appends = [
         'mensaje',
+        'cadenita',
     ];
 
     public function getMensajeAttribute()
     {
-        return '_______________';
+        return '->';
+    }
+
+    public function getCadenitaAttribute()
+    {
+        return 'holi';
     }
 
 

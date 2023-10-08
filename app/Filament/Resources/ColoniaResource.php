@@ -130,6 +130,10 @@ class ColoniaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->paginated([20, 50, 100, 'all'])
+            ->defaultPaginationPageOption(50)
+            ->deferLoading()
+            ->striped()
             ->columns([
                 TextColumn::make('id')
                     ->label('Ident')

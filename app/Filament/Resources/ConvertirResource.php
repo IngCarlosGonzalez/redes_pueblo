@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
+use App\Forms\Components\Mensajito;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Actions;
@@ -210,12 +211,11 @@ class ConvertirResource extends Resource
                                 ->columns(1),
 
                                 Section::make()
+                                ->description('Observaciones ó Indicaciones...')
                                 ->schema([
-                                    TextInput::make('mensaje')
-                                    ->label('M E N S A J E :')
-                                    ->disabled()
-                                    ->live()
-                                    ->dehydrated(false),
+
+                                    Mensajito::make('mensaje')->disabled(),
+
                                 ])
                                 ->columns(1),
 
@@ -230,6 +230,9 @@ class ConvertirResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->paginated([100, 'all'])
+            ->defaultPaginationPageOption(100)
+            ->striped()
             ->columns([
 
                 TextColumn::make('id')

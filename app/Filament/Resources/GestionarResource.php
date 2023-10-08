@@ -10,6 +10,7 @@ use App\Models\Contacto;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use App\Forms\Components\Mensajito;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Actions;
@@ -20,6 +21,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Actions\Action;
@@ -33,7 +35,8 @@ use App\Filament\Resources\GestionarResource\Pages\CreateGestionar;
 class GestionarResource extends Resource
 {
     protected static ?string $model = Contacto::class;
-    protected static ?string $modelLabel = 'Organizadores';
+    protected static ?string $modelLabel = 'Organizador';
+    protected static ?string $pluralModelLabel = 'Organizadores';
     protected static ?string $navigationLabel = 'Gestionar';
     protected static ?string $navigationIcon = 'heroicon-m-cog';
     protected static ?string $navigationGroup = 'CONTACTOS';
@@ -91,7 +94,8 @@ class GestionarResource extends Resource
                                     ->prefixIcon('heroicon-m-adjustments-horizontal')
                                     ->relationship('categoria', 'nombre')
                                     ->preload()
-                                    ->disabled(),
+                                    ->disabled()
+                                    ->dehydrated(),
     
                                     Select::make('nivel_en_red')
                                     ->label('Nivel en la Red')
@@ -103,13 +107,22 @@ class GestionarResource extends Resource
                                         '4' => ' 4 - Promotor',
                                         '5' => ' 5 - Pueblo',
                                     ])
-                                    ->disabled(),
+                                    ->disabled()
+                                    ->dehydrated(),
     
                                     TextInput::make('clave_tipo')
                                     ->label('Tipo de Contacto')
                                     ->prefixIcon('heroicon-m-user-circle')
-                                    ->disabled(),
-    
+                                    ->disabled()
+                                    ->dehydrated(),
+
+                                    Hidden::make('con_req_admin'),
+                                    Hidden::make('requerimiento'),
+                                    Hidden::make('con_req_listo'),
+                                    Hidden::make('tiene_usuario'),
+                                    Hidden::make('user_asignado'),
+                                    Hidden::make('user_vigente'),
+                                    
                                 ])
                                 ->compact()
                                 ->columns(1),
@@ -146,7 +159,10 @@ class GestionarResource extends Resource
                                                 if ($get('tiene_celular') && $get('tiene_correo')) {
                                                     $set('mensaje', 'Procede a registrar la solicitud... Asignar Usuario.');
                                                     // aqui va el codigo
-
+                                                    $set('con_req_admin', 1);
+                                                    $set('requerimiento', 'ASIGNAR-USER');
+                                                    $set('con_req_listo', 0);
+                                                    $set('mensaje', 'Click en guardar...');
                                                     return true;
                                                 } else {
                                                     $set('mensaje', 'Al organizador le falta Teléfono o Correo... No procede.');
@@ -156,7 +172,7 @@ class GestionarResource extends Resource
 
                                         Action::make('Desactivar Usuario')
                                             ->icon('heroicon-m-arrow-down-on-square')
-                                            ->color('warning')
+                                            ->color('info')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -189,13 +205,17 @@ class GestionarResource extends Resource
                                                 }
                                                 $set('mensaje', 'Procede a registrar la solicitud... Desactivación.');
                                                 // aqui va el codigo
-
+                                                $set('con_req_admin', 1);
+                                                $set('requerimiento', 'DESACTIVAR-USER');
+                                                $set('con_req_listo', 0);
+                                                $set('con_req_listo', 0);
+                                                $set('mensaje', 'Click en guardar...');
                                                 return true;
                                             }),
 
                                         Action::make('Reactivar Usuario')
                                             ->icon('heroicon-m-arrow-up-on-square')
-                                            ->color('success')
+                                            ->color('info')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -228,13 +248,17 @@ class GestionarResource extends Resource
                                                 }
                                                 $set('mensaje', 'Procede a registrar la solicitud... Reactivación');
                                                 // aqui va el codigo
-
+                                                $set('con_req_admin', 1);
+                                                $set('requerimiento', 'RE-ACTIVAR-USER');
+                                                $set('con_req_listo', 0);
+                                                $set('con_req_listo', 0);
+                                                $set('mensaje', 'Click en guardar...');
                                                 return true;
                                             }),
 
                                         Action::make('Cambiar Password')
                                             ->icon('heroicon-m-key')
-                                            ->color('gray')
+                                            ->color('info')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -267,7 +291,11 @@ class GestionarResource extends Resource
                                                 }
                                                 $set('mensaje', 'Procede a registrar la solicitud... Nueva Password.');
                                                 // aqui va el codigo
-
+                                                $set('con_req_admin', 1);
+                                                $set('requerimiento', 'CAMBIAR-PASSORD');
+                                                $set('con_req_listo', 0);
+                                                $set('con_req_listo', 0);
+                                                $set('mensaje', 'Click en guardar...');
                                                 return true;
                                             }),
 
@@ -316,12 +344,14 @@ class GestionarResource extends Resource
                                                 }
                                                 $hijos = Contacto::where('owner_id', $eluser)->count();
                                                 if ($hijos > 0) {
-                                                    $set('mensaje', 'Si tiene contactos vinculados... ' . $hijos);
+                                                    $ejecutor = auth()->id;
+                                                    $set('mensaje', 'Owner: ' . $eluser . ' tiene: ' . $hijos . ' regs. que pasan al Id: ' . $ejecutor);
                                                     // aqui va el codigo
-
+                                                    // Contacto::Where('owner_id', $eluser)->update(['owner_id' => $ejecutor]);
+                                                    $set('mensaje', 'Click en guardar...');
                                                     return true;
                                                 } else {
-                                                    $set('mensaje', 'El usuario no tiene contactos vinculados... No procede.');
+                                                    $set('mensaje', 'El organizador no tiene contactos vinculados... No procede.');
                                                     return true;
                                                 }
                                             }),
@@ -361,7 +391,12 @@ class GestionarResource extends Resource
                                                 }
                                                 $set('mensaje', 'Procede a regresar a nivel mínimo...');
                                                 // aqui va el codigo
-
+                                                $nuevo = 5;
+                                                $catego = 15;
+                                                $set('nivel_en_red', $nuevo);
+                                                $set('categoria_id', $catego);
+                                                $set('clave_tipo', 'Integrante');
+                                                $set('mensaje', 'Click en guardar...');
                                                 return true;
                                             }),
                                     ])->fullWidth(),
@@ -370,12 +405,11 @@ class GestionarResource extends Resource
                                 ->columns(1),
 
                                 Section::make()
+                                ->description('Observaciones ó Indicaciones...')
                                 ->schema([
-                                    TextInput::make('mensaje')
-                                    ->label('M E N S A J E :')
-                                    ->disabled()
-                                    ->live()
-                                    ->dehydrated(false),
+
+                                    Mensajito::make('mensaje')->disabled(),
+
                                 ])
                                 ->columns(1),
 
@@ -390,6 +424,9 @@ class GestionarResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->paginated([100, 'all'])
+            ->defaultPaginationPageOption(100)
+            ->striped()
             ->columns([
 
                 TextColumn::make('id'),
@@ -397,17 +434,16 @@ class GestionarResource extends Resource
                 TextColumn::make('owner_id')
                     ->label('Ownr')
                     ->badge()
-                    ->color('warning')
-                    ->sortable(),  
+                    ->color('warning'),  
 
                 ImageColumn::make('foto_personal')
                     ->label('Foto')
                     ->disk('digitalocean')
                     ->size(40)
-                    ->circular(),
+                    ->square(),
 
                 TextColumn::make('nombre_en_cadena')
-                    ->label('Nombre del Contacto')
+                    ->label('Nombre Organizador')
                     ->searchable()
                     ->wrap()
                     ->sortable(),
@@ -415,33 +451,32 @@ class GestionarResource extends Resource
                 SelectColumn::make('nivel_en_red')
                     ->label('Nivel en Red')
                     ->options([
-                        '2' => 'COORD',
-                        '3' => 'OPERS',
-                        '4' => 'PROMS',
+                        '2' => 'Cord.',
+                        '3' => 'Oper.',
+                        '4' => 'Prom.',
                     ])
                     ->disabled()
                     ->selectablePlaceholder(false),
 
                 IconColumn::make('con_req_admin')
-                    ->label('Solicitud?')
+                    ->label('Req?')
                     ->boolean(),
 
                 TextColumn::make('requerimiento')
-                    ->label('Requerimiento'),
+                    ->label('Solicitud'),
 
                 IconColumn::make('con_req_listo')
-                    ->label('Atendida?')
+                    ->label('Listo?')
                     ->boolean(),
 
                 IconColumn::make('tiene_usuario')
-                    ->label('Usuario?')
+                    ->label('User?')
                     ->boolean(),
 
                 TextColumn::make('user_asignado')
                     ->label('Id User')
                     ->badge()
-                    ->color('success')
-                    ->sortable(),  
+                    ->color('success'),  
 
                 IconColumn::make('user_vigente')
                     ->label('Activo?')
