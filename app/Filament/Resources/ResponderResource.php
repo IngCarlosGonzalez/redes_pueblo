@@ -4,49 +4,54 @@ namespace App\Filament\Resources;
 
 use Exception;
 use Filament\Forms;
+use App\Models\User;
 use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Contacto;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use Filament\Resources\Resource;
 use App\Forms\Components\Mensajito;
+use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Section;
-use Filament\Support\Enums\FontFamily;
-use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Actions\Action;
-use App\Filament\Resources\GestionarResource\Pages;
+use App\Filament\Resources\ResponderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\GestionarResource\RelationManagers;
-use App\Filament\Resources\GestionarResource\Pages\EditGestionar;
-use App\Filament\Resources\GestionarResource\Pages\ListGestionars;
-use App\Filament\Resources\GestionarResource\Pages\CreateGestionar;
+use App\Filament\Resources\ResponderResource\RelationManagers;
+use App\Filament\Resources\ResponderResource\Pages\EditResponder;
+use App\Filament\Resources\ResponderResource\Pages\ListResponders;
+use App\Filament\Resources\ResponderResource\Pages\CreateResponder;
 
-class GestionarResource extends Resource
+class ResponderResource extends Resource
 {
     protected static ?string $model = Contacto::class;
-    protected static ?string $modelLabel = 'Organizador';
-    protected static ?string $pluralModelLabel = 'Organizadores';
-    protected static ?string $navigationLabel = 'Gestionar';
-    protected static ?string $navigationIcon = 'heroicon-m-cog';
+    protected static ?string $modelLabel = 'Solicitud';
+    protected static ?string $pluralModelLabel = 'Solicitudes';
+    protected static ?string $navigationLabel = 'Responder';
+    protected static ?string $navigationIcon = 'heroicon-m-bolt';
     protected static ?string $navigationGroup = 'CONTACTOS';
-    protected static ?int $navigationSort = 3; 
+    protected static ?int $navigationSort = 4; 
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('clave_tipo', '=', 'Organizador');
+            ->where([
+                ['clave_tipo', 'Organizador'],
+                ['con_req_admin', true],
+                ['con_req_listo', false]
+            ]);
     }
 
     public static function form(Form $form): Form
@@ -117,26 +122,71 @@ class GestionarResource extends Resource
                                     ->disabled()
                                     ->dehydrated(),
 
-                                    Hidden::make('con_req_admin'),
-                                    Hidden::make('requerimiento'),
-                                    Hidden::make('con_req_listo'),
-                                    Hidden::make('tiene_usuario'),
-                                    Hidden::make('user_asignado'),
-                                    Hidden::make('user_vigente'),
-                                    
                                 ])
                                 ->compact()
                                 ->columns(1),
 
-                                Section::make('SOLICITUDES AL ADMINISTRADOR')
-                                ->description('Dar Click en la Acción por Solicitar')
+                                Section::make('Información Relativa')
+                                ->schema([
+
+                                    Toggle::make('con_req_admin')
+                                    ->label('Con Solicitud')
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->inline(false)
+                                    ->disabled()
+                                    ->dehydrated(),
+
+                                    TextInput::make('requerimiento')
+                                    ->label('Se Solicita')
+                                    ->disabled()
+                                    ->dehydrated(),
+
+                                    Toggle::make('con_req_listo')
+                                    ->label('Atendida OK')
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->inline(false)
+                                    ->disabled()
+                                    ->dehydrated(),
+
+                                    Toggle::make('tiene_usuario')
+                                    ->label('Asignación')
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->inline(false)
+                                    ->disabled()
+                                    ->dehydrated(),
+
+                                    TextInput::make('user_asignado')
+                                    ->label('Id User Asignado')
+                                    ->disabled()
+                                    ->dehydrated(),
+
+                                    Toggle::make('user_vigente')
+                                    ->label('User Vigente')
+                                    ->onColor('success')
+                                    ->offColor('danger')
+                                    ->inline(false)
+                                    ->disabled()
+                                    ->dehydrated(),
+
+                                ])
+                                ->compact()
+                                ->columns([
+                                    'sm' => 1,
+                                    'md' => 3,
+                                ]),
+
+                                Section::make('ATENCIÓN DE SOLICITUDES')
+                                ->description('Dar Click en la Solución por Aplicar...')
                                 ->schema([
 
                                     Actions::make([
 
                                         Action::make('Asignar Usuario')
                                             ->icon('heroicon-m-user-plus')
-                                            ->color('info')
+                                            ->color('primary')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -160,11 +210,54 @@ class GestionarResource extends Resource
                                                 if ($get('tiene_celular') && $get('tiene_correo')) {
                                                     $set('mensaje', 'Procede a registrar la solicitud... Asignar Usuario.');
                                                     // aqui va el codigo
-                                                    $set('con_req_admin', 1);
-                                                    $set('requerimiento', 'ASIGNAR-USER');
-                                                    $set('con_req_listo', 0);
-                                                    $set('mensaje', 'Click en guardar...');
-                                                    return true;
+
+                                                    $username = $get('nombre_en_cadena');
+                                                    $usermail = $get('cuenta_de_correo');
+                                                    $usercelu = $get('telefono_movil');
+                                                    $userpswd = str_ireplace(' ', '', $usercelu);
+                                                    $userlevl = $get('nivel_en_red');
+                                    
+                                                    if ($userlevl == 2) {
+                                                        $userrole = 'COORDINADOR';
+                                                    } elseif ($userlevl == 3) {
+                                                        $userrole = 'OPERADOR';
+                                                    } else {
+                                                        $userrole = 'PROMOTOR';
+                                                    }
+                                    
+                                                    try {
+
+                                                        $creado = User::create(
+                                                            [
+                                                                'name'               => $username,
+                                                                'email'              => $usermail,
+                                                                'password'           => Hash::make($userpswd),
+                                                                'email_verified_at'  => now(),
+                                                                'remember_token'     => Str::random(10),
+                                                                'profile_photo_path' => null,
+                                                                'is_active'          => true,
+                                                                'is_admin'           => false,
+                                                                'level_id'           => $userlevl,
+                                                            ]
+                                                        )->assignRole($userrole);
+
+                                                    } catch(Exception $e) {
+                                                        $set('mensaje', 'Error en create user...' . $e);
+                                                        return false;
+                                                    }
+                                    
+                                                    if (is_null($creado)) {
+                                                        $set('mensaje', 'No se pudo crear nuevo user...');
+                                                        return true;
+                                                    } else {
+                                                        $set('tiene_usuario', true);
+                                                        $set('user_asignado', $creado->id);
+                                                        $set('user_vigente' , true);
+                                                        $set('con_req_admin', false);
+                                                        $set('requerimiento', 'user-asignado');
+                                                        $set('con_req_listo', true);
+                                                        $set('mensaje', 'User ' . $userrole . ' listo: Click en guardar...');
+                                                    }
                                                 } else {
                                                     $set('mensaje', 'Al organizador le falta Teléfono o Correo... No procede.');
                                                     return true;
@@ -173,7 +266,7 @@ class GestionarResource extends Resource
 
                                         Action::make('Desactivar Usuario')
                                             ->icon('heroicon-m-arrow-down-on-square')
-                                            ->color('info')
+                                            ->color('primary')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -206,17 +299,30 @@ class GestionarResource extends Resource
                                                 }
                                                 $set('mensaje', 'Procede a registrar la solicitud... Desactivación.');
                                                 // aqui va el codigo
-                                                $set('con_req_admin', 1);
-                                                $set('requerimiento', 'DESACTIVAR-USER');
-                                                $set('con_req_listo', 0);
-                                                $set('con_req_listo', 0);
-                                                $set('mensaje', 'Click en guardar...');
+
+                                                $userasig = $get('user_asignado');
+
+                                                try {
+
+                                                    User::Where('id', $userasig)->update((['is_active' => false]));
+
+                                                } catch(Exception $e) {
+                                                    $set('mensaje', 'Error en update user...' . $e);
+                                                    return false;
+                                                }
+
+                                                $set('user_vigente' , false);
+                                                $set('con_req_admin', false);
+                                                $set('requerimiento', 'user-desactivado');
+                                                $set('con_req_listo', true);
+                                                $set('mensaje', 'User DESACTIVADO: Click en guardar...');
                                                 return true;
+
                                             }),
 
                                         Action::make('Reactivar Usuario')
                                             ->icon('heroicon-m-arrow-up-on-square')
-                                            ->color('info')
+                                            ->color('primary')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -249,17 +355,30 @@ class GestionarResource extends Resource
                                                 }
                                                 $set('mensaje', 'Procede a registrar la solicitud... Reactivación');
                                                 // aqui va el codigo
-                                                $set('con_req_admin', 1);
-                                                $set('requerimiento', 'RE-ACTIVAR-USER');
-                                                $set('con_req_listo', 0);
-                                                $set('con_req_listo', 0);
-                                                $set('mensaje', 'Click en guardar...');
+
+                                                $userasig = $get('user_asignado');
+
+                                                try {
+
+                                                    User::Where('id', $userasig)->update((['is_active' => true]));
+
+                                                } catch(Exception $e) {
+                                                    $set('mensaje', 'Error en update user...' . $e);
+                                                    return false;
+                                                }
+
+                                                $set('user_vigente' , false);
+                                                $set('con_req_admin', false);
+                                                $set('requerimiento', 'user-reactivado');
+                                                $set('con_req_listo', true);
+                                                $set('mensaje', 'User REACTIVADO: Click en guardar...');
                                                 return true;
+
                                             }),
 
                                         Action::make('Cambiar Password')
                                             ->icon('heroicon-m-key')
-                                            ->color('info')
+                                            ->color('primary')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -292,169 +411,28 @@ class GestionarResource extends Resource
                                                 }
                                                 $set('mensaje', 'Procede a registrar la solicitud... Nueva Password.');
                                                 // aqui va el codigo
-                                                $set('con_req_admin', 1);
-                                                $set('requerimiento', 'CAMBIAR-PASSORD');
-                                                $set('con_req_listo', 0);
-                                                $set('con_req_listo', 0);
-                                                $set('mensaje', 'Click en guardar...');
-                                                return true;
-                                            }),
-
-                                    ])->fullWidth(),
-
-                                ])
-                                ->columns(1),
-
-                                Section::make('OPERACIONES CON ORGANIZADORES')
-                                ->aside() 
-                                ->description('Asigna o Desasigna Contactos y en su caso Retira el Nivvel de Organizador...')
-                                ->schema([
-
-                                    Actions::make([
-
-                                        Action::make('Vincular Contactos')
-                                            ->icon('heroicon-m-plus-circle')
-                                            ->color('success')
-                                            ->requiresConfirmation()
-                                            ->action(function (Get $get, Set $set) {
-                                                $ident = $get('id');
-                                                $set('mensaje', 'Registro...' . $ident);
-                                                $nivel = $get('nivel_en_red');
-                                                if ($nivel > 4) {
-                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
-                                                    return true;
-                                                }
-                                                if ($nivel < 2) {
-                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
-                                                    return true;
-                                                }
-                                                if (!$get('tiene_usuario')) {
-                                                    $set('mensaje', 'El organizador no tiene usuario de sistema... No procede.');
-                                                    return true;
-                                                } else {
-                                                    if (!$get('user_asignado') > 0) {
-                                                        $set('mensaje', 'El organizador no tiene usuario válido... No procede.');
-                                                        return true;
-                                                    } else {
-                                                        $eluser = $get('user_asignado');
-                                                        if (!$get('user_vigente')) {
-                                                            $set('mensaje', 'El usuario no está activo... Reactivarlo primero.');
-                                                            return true;
-                                                        }
-                                                    }
-                                                }
-                                                // verifica contactos disponibles
-                                                $ejecutor  = auth()->id;
-                                                $registros = Contacto::where('owner_id', $ejecutor)->where('owner_id', '>', $nivel)->count();
-                                                if (!$registros > 0) {
-                                                    $set('mensaje', 'No hay contactos de menor nivel por vincular... No procede.');
-                                                    return true;
-                                                }
-                                                $set('mensaje', 'Ejecutor: ' . $ejecutor . ' con: ' . $registros . ' disponibles para Id: ' . $eluser);
-                                                // aqui va el codigo
-                                                if (1 > 0) {
+                                                
+                                                $userasig = $get('user_asignado');
+                                                $newpaswd = 'Reseteada';
+                                                $userpswd = Hash::make($newpaswd);
+                                
+                                                try {
                                                     
-                                                    //$set('mensaje', 'Click en guardar...');
-                                                    return true;
-                                                } else {
-                                                    $set('mensaje', 'xxxxxxxxxxxx');
-                                                    return true;
-                                                }
-                                            }),
+                                                    User::Where('id', $userasig)->update((['password' => $userpswd]));
 
-                                        Action::make('Desvincular Contactos')
-                                            ->icon('heroicon-m-minus-circle')
-                                            ->color('danger')
-                                            ->requiresConfirmation()
-                                            ->action(function (Get $get, Set $set) {
-                                                $ident = $get('id');
-                                                $set('mensaje', 'Registro...' . $ident);
-                                                $nivel = $get('nivel_en_red');
-                                                if ($nivel > 4) {
-                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
-                                                    return true;
+                                                } catch(Exception $e) {
+                                                    $set('mensaje', 'Error en update user...' . $e);
+                                                    return false;
                                                 }
-                                                if ($nivel < 2) {
-                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
-                                                    return true;
-                                                }
-                                                if (!$get('tiene_usuario')) {
-                                                    $set('mensaje', 'El organizador no tiene usuario de sistema... No procede.');
-                                                    return true;
-                                                } else {
-                                                    if (!$get('user_asignado') > 0) {
-                                                        $set('mensaje', 'El organizador no tiene usuario válido... No procede.');
-                                                        return true;
-                                                    } else {
-                                                        $eluser = $get('user_asignado');
-                                                        if ($get('user_vigente')) {
-                                                            $set('mensaje', 'El usuario aún está activo... Desactivarlo primero.');
-                                                            return true;
-                                                        }
-                                                    }
-                                                }
-                                                $hijos = Contacto::where('owner_id', $eluser)->count();
-                                                if ($hijos > 0) {
-                                                    $ejecutor = auth()->id;
-                                                    $set('mensaje', 'Owner: ' . $eluser . ' tiene: ' . $hijos . ' regs. que pasan al Id: ' . $ejecutor);
-                                                    // aqui va el codigo
-                                                    try {
-                                                        Contacto::Where('owner_id', $eluser)->update(['owner_id' => $ejecutor]);
-                                                    } catch(Exception $e) {
-                                                        $set('mensaje', 'Error en update contactos...' . $e);
-                                                        return false;
-                                                    }
-                                                    $set('mensaje', 'Contactos Desvinculados: Click en guardar...');
-                                                    return true;
-                                                } else {
-                                                    $set('mensaje', 'El organizador no tiene contactos vinculados... No procede.');
-                                                    return true;
-                                                }
-                                            }),
-
-                                        Action::make('Retirar el Nivel')
-                                            ->icon('heroicon-m-arrow-long-down')
-                                            ->color('gray')
-                                            ->requiresConfirmation()
-                                            ->action(function (Get $get, Set $set) {
-                                                $ident = $get('id');
-                                                $set('mensaje', 'Registro...' . $ident);
-                                                $nivel = $get('nivel_en_red');
-                                                if ($nivel > 4) {
-                                                    $set('mensaje', 'Nivel menor no elegible... No procede.');
-                                                    return true;
-                                                }
-                                                if ($nivel < 2) {
-                                                    $set('mensaje', 'Nivel maaximo no elegible... No procede.');
-                                                    return true;
-                                                }
-                                                if ($get('tiene_usuario')) {
-                                                    if ($get('user_asignado') > 0) {
-                                                        $eluser = $get('user_asignado');
-                                                        if ($get('user_vigente')) {
-                                                            $set('mensaje', 'El usuario aún está activo... Desactivarlo primero.');
-                                                            return true;
-                                                        } else {
-                                                            $hijos = Contacto::where('owner_id', $eluser)->count();
-                                                            if ($hijos > 0) {
-                                                                $set('mensaje', 'No procede pues aún tiene contactos.');
-                                                                return true;
-                                                            } else {
-                                                                $set('mensaje', 'Si se puede regresar a nivel mínimo.');
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                $set('mensaje', 'Procede a regresar a nivel mínimo...');
-                                                // aqui va el codigo
-                                                $nuevo = 5;
-                                                $catego = 15;
-                                                $set('nivel_en_red', $nuevo);
-                                                $set('categoria_id', $catego);
-                                                $set('clave_tipo', 'Integrante');
-                                                $set('mensaje', 'Nivel Retirado: Click en guardar...');
+                                
+                                                $set('con_req_admin', false);
+                                                $set('requerimiento', 'password-reset');
+                                                $set('con_req_listo', true);
+                                                $set('mensaje', 'Password Reseteada: Click en guardar...');
                                                 return true;
+
                                             }),
+
                                     ])->fullWidth(),
 
                                 ])
@@ -571,9 +549,9 @@ class GestionarResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListGestionars::route('/'),
-            'create' => CreateGestionar::route('/create'),
-            'edit'   => EditGestionar::route('/{record}/edit'),
+            'index'  => ListResponders::route('/'),
+            'create' => CreateResponder::route('/create'),
+            'edit'   => EditResponder::route('/{record}/edit'),
         ];
-    }     
+    }    
 }

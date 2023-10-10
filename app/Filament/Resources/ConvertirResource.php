@@ -109,6 +109,13 @@ class ConvertirResource extends Resource
                                 ->live()
                                 ->dehydrated(),
 
+                                TextInput::make('clave_tipo')
+                                ->label('Tipo de Contacto')
+                                ->prefixIcon('heroicon-m-user-circle')
+                                ->disabled()
+                                ->live()
+                                ->dehydrated(),
+
                                 Select::make('nivel_en_red')
                                 ->label('Nivel en la Red')
                                 ->prefixIcon('heroicon-m-swatch')
@@ -119,13 +126,6 @@ class ConvertirResource extends Resource
                                     '4' => ' 4 - Promotor',
                                     '5' => ' 5 - Pueblo',
                                 ])
-                                ->disabled()
-                                ->live()
-                                ->dehydrated(),
-
-                                TextInput::make('clave_tipo')
-                                ->label('Tipo de Contacto')
-                                ->prefixIcon('heroicon-m-user-circle')
                                 ->disabled()
                                 ->live()
                                 ->dehydrated(),

@@ -6,6 +6,8 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use App\Filament\Pages\Usuario;
+use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\Authenticate;
@@ -57,6 +59,12 @@ class AdminPanelProvider extends PanelProvider
                     ->collapsed(fn (): bool => true),
                 NavigationGroup::make()
                     ->label('CONTACTOS'),
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Password')
+                    ->url(fn (): string => Usuario::getUrl())
+                    ->icon('heroicon-o-key'),
             ])
             ->middleware([
                 EncryptCookies::class,
