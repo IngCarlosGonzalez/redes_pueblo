@@ -5,6 +5,7 @@ namespace App\Models;
 use Spatie\Image\Manipulations;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,9 +27,9 @@ class Contacto extends Model implements HasMedia
     protected $attributes = [
         'nivel_en_red'        => 5,
         'clave_tipo'          => 'Integrante',
-        'requerimiento'       => 'n/a',
-        'colonia_catalogada'  => true,
-        'domicilio_colonia'   => 'n/a',
+        'requerimiento'       => '',
+        'colonia_catalogada'  => false,
+        'domicilio_colonia'   => '',
         'distrito_federal'    => 0,
         'distrito_estatal'    => 0,
         'numero_de_ruta'      => 0,
@@ -80,5 +81,12 @@ class Contacto extends Model implements HasMedia
         return 'holi';
     }
 
+    /**
+     * Scope con query para solo accesar regs con nivel mayor que...
+     */
+    public function scopeOfNivel(Builder $query, string $mayorque): void
+    {
+        $query->where('nivel_en_red', '>', $mayorque);
+    }
 
 }

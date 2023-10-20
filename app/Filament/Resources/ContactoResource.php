@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use App\Models\Colonia;
 use Filament\Forms\Get;
@@ -11,8 +10,8 @@ use App\Models\Contacto;
 use Filament\Forms\Form;
 use App\Models\Municipio;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 use Filament\Resources\Resource;
+use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -20,25 +19,20 @@ use Filament\Forms\Components\Section;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Forms\Components\Textarea;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use App\Filament\Resources\ContactoResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use App\Filament\Resources\ContactoResource\RelationManagers;
+
 
 class ContactoResource extends Resource
 {
     protected static ?string $model = Contacto::class;
 
-    protected static ?string $modelLabel = 'Contactos';
+    protected static ?string $modelLabel = 'Contacto';
+
+    protected static ?string $pluralModelLabel = 'Contactos';
 
     protected static ?string $navigationLabel = 'Registro';
 
@@ -52,7 +46,7 @@ class ContactoResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('DATOS DEL CONTACTO')
+                Section::make('DATOS PRINCIPALES')
                     ->schema([
 
                         Section::make()
@@ -167,7 +161,6 @@ class ContactoResource extends Resource
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                             Select::make('categoria_id')
@@ -242,7 +235,8 @@ class ContactoResource extends Resource
                             })
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (Get $get, Set $set) {
-                                $set('colonia_catalogada', true);
+                                $set('colonia_catalogada', false);
+                                $set('domicilio_colonia', '');
                                 $set('con_domi_actual', 0);
                                 $set('distrito_federal', 0);
                                 $set('distrito_estatal', 0);
@@ -250,10 +244,17 @@ class ContactoResource extends Resource
                                 $set('numero_seccion', 0);
                                 $set('seccion_prioritaria', false);
                                 $set('datos_verificados', false);
+
                                 $lacolonia = Colonia::find($get('colonia_id'));
+
                                 if($lacolonia){
                                     $set('domicilio_colonia', $lacolonia->nombre_colonia);
                                     $set('domicilio_codpost', $lacolonia->cod_post_colon);
+                                    $set('distrito_federal',  $lacolonia->distrito_fed);
+                                    $set('distrito_estatal',  $lacolonia->distrito_local);
+                                    $set('numero_de_ruta',    $lacolonia->numero_de_ruta);
+                                    $set('numero_seccion',    $lacolonia->seccion);
+                                    $set('colonia_catalogada', true);
                                 }
                             }),
 
@@ -269,19 +270,20 @@ class ContactoResource extends Resource
                             TextInput::make('domicilio_colonia')
                             ->label('Nombre de la Colonia')
                             ->maxLength(60)
-                            ->live()
-                            ->disabled(function (Get $get) {
+                            /* ->disabled(function (Get $get) {
                                 $opcion = $get('colonia_catalogada');
                                 if (isset($opcion)){
                                     return $opcion;
+                                } else {
+                                    return false;
                                 }
-                                return false;
-                            })
+                            }) */
                             ->dehydrateStateUsing(function (string | NULL $state) {
                                 if (isset($state)){
                                     return strtoupper($state);
+                                } else {
+                                    return $state;
                                 }
-                                return 'n/a';
                             }),
 
                             TextInput::make('domicilio_calle')
@@ -496,7 +498,6 @@ class ContactoResource extends Resource
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                             TextInput::make('numero_cred_ine')
@@ -617,8 +618,9 @@ class ContactoResource extends Resource
                                 $opcion = $get('es_militante');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             }),
 
                             TextInput::make('fecha_afiliacion')
@@ -630,8 +632,9 @@ class ContactoResource extends Resource
                                 $opcion = $get('es_militante');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             }),
 
                             TextInput::make('numero_credencial')
@@ -641,8 +644,9 @@ class ContactoResource extends Resource
                                 $opcion = $get('es_militante');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             }),
 
                             Toggle::make('en_comite')
@@ -664,8 +668,9 @@ class ContactoResource extends Resource
                                 $opcion = $get('en_comite');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             }),
 
                             Select::make('comite_rol')
@@ -683,8 +688,9 @@ class ContactoResource extends Resource
                                 $opcion = $get('en_comite');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             }),
 
                             Select::make('defensor_voto')
@@ -701,8 +707,9 @@ class ContactoResource extends Resource
                                 $opcion = $get('en_comite');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             }),
 
                             Toggle::make('en_partido')
@@ -719,14 +726,14 @@ class ContactoResource extends Resource
                                 $opcion = $get('en_partido');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             })
                             ->dehydrateStateUsing(function (string | NULL $state) {
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                             TextInput::make('partido_puesto')
@@ -736,14 +743,14 @@ class ContactoResource extends Resource
                                 $opcion = $get('en_partido');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             })
                             ->dehydrateStateUsing(function (string | NULL $state) {
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                             TextInput::make('partido_lugar')
@@ -753,14 +760,14 @@ class ContactoResource extends Resource
                                 $opcion = $get('en_partido');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             })
                             ->dehydrateStateUsing(function (string | NULL $state) {
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                             Toggle::make('es_funcionario')
@@ -777,14 +784,14 @@ class ContactoResource extends Resource
                                 $opcion = $get('es_funcionario');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             })
                             ->dehydrateStateUsing(function (string | NULL $state) {
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                             TextInput::make('dependencia')
@@ -794,14 +801,14 @@ class ContactoResource extends Resource
                                 $opcion = $get('es_funcionario');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             })
                             ->dehydrateStateUsing(function (string | NULL $state) {
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                             TextInput::make('ubicacion')
@@ -811,14 +818,14 @@ class ContactoResource extends Resource
                                 $opcion = $get('es_funcionario');
                                 if (isset($opcion)){
                                     return !$opcion;
+                                } else {
+                                    return true;
                                 }
-                                return true;
                             })
                             ->dehydrateStateUsing(function (string | NULL $state) {
                                 if (isset($state)){
                                     return strtoupper($state);
                                 }
-                                return 'n/a';
                             }),
 
                         ])
@@ -925,8 +932,8 @@ class ContactoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->paginated([20, 50, 100, 'all'])
-            ->defaultPaginationPageOption(50)
+            ->paginated([15, 50, 100, 'all'])
+            ->defaultPaginationPageOption(15)
             ->deferLoading()
             ->striped()
             ->columns([
@@ -937,6 +944,7 @@ class ContactoResource extends Resource
                 TextColumn::make('owner_id')
                     ->label('Owner')
                     ->badge()
+                    ->grow(false)
                     ->color('warning')
                     ->sortable(),  
 
@@ -964,6 +972,7 @@ class ContactoResource extends Resource
                     ->label('Correo Electrónico')
                     ->searchable()
                     ->wrap()
+                    ->grow(false)
                     ->copyable()
                     ->copyMessage('Dirección de Correo Copiada...')
                     ->copyMessageDuration(2000)
@@ -973,6 +982,7 @@ class ContactoResource extends Resource
                     ->label('Registrado')
                     ->dateTime()
                     ->sortable()
+                    ->wrap()
                     ->since(),
             ])
             ->filters([
@@ -983,10 +993,7 @@ class ContactoResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    /* BulkAction::make('Eliminar')
-                        ->requiresConfirmation()
-                        ->action(fn (Collection $records) => $records->each->delete())
-                        ->deselectRecordsAfterCompletion(), */
+                    //
                 ]),
             ])
             ->emptyStateActions([

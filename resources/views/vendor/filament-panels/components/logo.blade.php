@@ -8,7 +8,7 @@
     >
         <div class="flex flex-row items-center p-2 m-2 space-x-12">
             <img src="/logos/exotico2.jpg" alt="Logo" class="h-10">
-            &nbsp; Redes-Pueblo
+            &nbsp; Redes del Pueblo
         </div>
     </div>
 @endif

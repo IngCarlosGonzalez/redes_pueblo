@@ -1,0 +1,37 @@
+
+   Symfony\Component\ErrorHandler\Error\FatalError 
+
+  New expressions are not supported in this context
+
+  at app/Filament/Resources/VincularResource.php:32
+     28▕     protected static ?string $pluralModelLabel = 'Asignables';
+     29▕ 
+     30▕     protected static bool $shouldRegisterNavigation = false;
+     31▕ 
+  ➜  32▕     public $parametros = new Parametro;
+     33▕ 
+     34▕     public $elejecutor;
+     35▕     public $elheredero;
+     36▕     public $nivelenred;
+
+
+   Whoops\Exception\ErrorException 
+
+  New expressions are not supported in this context
+
+  at app/Filament/Resources/VincularResource.php:32
+     28▕     protected static ?string $pluralModelLabel = 'Asignables';
+     29▕ 
+     30▕     protected static bool $shouldRegisterNavigation = false;
+     31▕ 
+  ➜  32▕     public $parametros = new Parametro;
+     33▕ 
+     34▕     public $elejecutor;
+     35▕     public $elheredero;
+     36▕     public $nivelenred;
+
+      [2m+1 vendor frames [22m
+
+  2   [internal]:0
+      Whoops\Run::handleShutdown()
+

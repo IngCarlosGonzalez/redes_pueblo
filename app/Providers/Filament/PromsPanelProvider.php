@@ -27,15 +27,17 @@ class PromsPanelProvider extends PanelProvider
             ->id('proms')
             ->path('proms')
             ->login()
-            ->sidebarCollapsibleOnDesktop()
+            ->emailVerification()
+            ->sidebarFullyCollapsibleOnDesktop()
             ->font('Inter')
             ->colors([
-                'danger' => Color::Rose,
+                'danger' => Color::Red,
                 'gray' => Color::Gray,
                 'info' => Color::Blue,
                 'primary' => Color::Cyan,
-                'success' => Color::Emerald,
-                'warning' => Color::Orange,
+                'success' => Color::Green,
+                'warning' => Color::Amber,
+                'naranja' => Color::Orange,
             ])
             ->discoverResources(in: app_path('Filament/Proms/Resources'), for: 'App\\Filament\\Proms\\Resources')
             ->discoverPages(in: app_path('Filament/Proms/Pages'), for: 'App\\Filament\\Proms\\Pages')

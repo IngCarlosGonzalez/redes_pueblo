@@ -9,9 +9,12 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Contacto;
 use Filament\Forms\Form;
+use App\Models\Parametro;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use App\Forms\Components\Mensajito;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Actions;
@@ -21,13 +24,16 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\VincularResource;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\GestionarResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use App\Filament\Resources\GestionarResource\RelationManagers;
 use App\Filament\Resources\GestionarResource\Pages\EditGestionar;
 use App\Filament\Resources\GestionarResource\Pages\ListGestionars;
@@ -318,6 +324,7 @@ class GestionarResource extends Resource
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
+                                                $heredero = $get('nombre_en_cadena');
                                                 $set('mensaje', 'Registro...' . $ident);
                                                 $nivel = $get('nivel_en_red');
                                                 if ($nivel > 4) {
@@ -344,22 +351,101 @@ class GestionarResource extends Resource
                                                     }
                                                 }
                                                 // verifica contactos disponibles
-                                                $ejecutor  = auth()->id;
-                                                $registros = Contacto::where('owner_id', $ejecutor)->where('owner_id', '>', $nivel)->count();
+                                                $ejecutor  = Auth::user()->id;
+                                                $registros = Contacto::where('owner_id', $ejecutor)->where('categoria_id', '<>', 15)->where('nivel_en_red', '>', $nivel)->count();
                                                 if (!$registros > 0) {
                                                     $set('mensaje', 'No hay contactos de menor nivel por vincular... No procede.');
                                                     return true;
                                                 }
+
+                                                // si hay contactos... prosigue
                                                 $set('mensaje', 'Ejecutor: ' . $ejecutor . ' con: ' . $registros . ' disponibles para Id: ' . $eluser);
-                                                // aqui va el codigo
-                                                if (1 > 0) {
-                                                    
-                                                    //$set('mensaje', 'Click en guardar...');
-                                                    return true;
-                                                } else {
-                                                    $set('mensaje', 'xxxxxxxxxxxx');
-                                                    return true;
-                                                }
+                                                                                                
+                                                // aqui se preparan opciones para filtros.-
+
+                                                DB::table('filtrarsecs')->where('ejecutor', '=', Auth::user()->id)->delete();  
+                                                DB::table('filtrarcols')->where('ejecutor', '=', Auth::user()->id)->delete();  
+                                             
+                                                // primero se concentran secciones y colonias.-
+
+                                                DB::table('filtrarsecs')->insertUsing([
+                                                    'ejecutor', 'seccion', 'municipio_id'
+                                                ], DB::table('contactos')->select(
+                                                    'owner_id', 'numero_seccion', 'municipio_id'
+                                                )->where('owner_id', '=', Auth::user()->id)
+                                                 ->where('categoria_id', '<>', 15)
+                                                 ->where('nivel_en_red', '>', $nivel)
+                                                 ->whereNotNull('numero_seccion')
+                                                 ->where('numero_seccion', '>', 0)
+                                                 ->groupBy('owner_id', 'numero_seccion', 'municipio_id')
+                                                );
+
+                                                DB::table('filtrarcols')->insertUsing([
+                                                    'ejecutor', 'colonia_id', 'municipio_id', 'num_seccion', 'nombre_colonia'
+                                                ], DB::table('contactos')->select(
+                                                    'owner_id', 'colonia_id', 'municipio_id', 'numero_seccion', 'domicilio_colonia'
+                                                )->where('owner_id', '=', Auth::user()->id)
+                                                 ->where('categoria_id', '<>', 15)
+                                                 ->where('nivel_en_red', '>', $nivel)
+                                                 ->whereNotNull('colonia_id')
+                                                 ->where('colonia_id', '>', 0)
+                                                 ->groupBy('owner_id', 'colonia_id', 'municipio_id', 'numero_seccion', 'domicilio_colonia')
+                                                );
+                                             
+                                                // luego se cargan nombres de mpios.-
+
+                                                DB::table('municipios')->where('id', '<', 39)
+                                                    ->lazyById()->each(function (object $mpio) {
+                                                        DB::table('filtrarsecs')
+                                                            ->where('ejecutor', Auth::user()->id)
+                                                            ->where('municipio_id', $mpio->id)
+                                                            ->update(['nombre_mpio' => $mpio->nombre]);
+                                                    });
+                                                
+                                                DB::table('municipios')->where('id', '<', 39)
+                                                    ->lazyById()->each(function (object $mpio) {
+                                                        DB::table('filtrarcols')
+                                                            ->where('ejecutor', Auth::user()->id)
+                                                            ->where('municipio_id', $mpio->id)
+                                                            ->update(['nombre_mpio' => $mpio->nombre]);
+                                                    });
+                                             
+                                                //y se integran las descripciones.-
+
+                                                DB::table('filtrarsecs')->where('ejecutor', Auth::user()->id)
+                                                    ->lazyById()->each(function (object $registro) {
+                                                        $cadena = $registro->seccion . ' --- de: ' . $registro->nombre_mpio; 
+                                                        DB::table('filtrarsecs')
+                                                            ->where('id', $registro->id)
+                                                            ->update(['descripcion' => $cadena]);
+                                                    });
+
+                                                DB::table('filtrarcols')->where('ejecutor', Auth::user()->id)
+                                                    ->lazyById()->each(function (object $registro) {
+                                                        $cadena = 'Sección: ' . $registro->num_seccion . ' --- Colonia: ' . $registro->nombre_colonia . ' --- Mpio: ' . $registro->nombre_mpio; 
+                                                        DB::table('filtrarcols')
+                                                            ->where('id', $registro->id)
+                                                            ->update(['descripcion' => $cadena]);
+                                                    });
+
+                                                // aqui se notifica.-
+
+                                                GestionarResource::makeNotification(
+                                                    'REDIRECCIONAMIENTO OK: CARGANDO OPCIONES...',
+                                                    'Se abre listado de contactos para seleccionar y vinculase a:  ' . $heredero,
+                                                    'success',
+                                                    'tabler-info-circle-filled',
+                                                )->send();
+                                                
+                                                // aqui se arman parametros y redirecciona.-
+
+                                                Parametro::upsert([
+                                                    ['ejecutor' => $ejecutor, 'heredero' => $eluser, 'delnivel' => $nivel]
+                                                ], ['ejecutor'], ['heredero', 'delnivel']);
+
+                                                //return redirect('admin/vinculars');
+                                                return redirect(VincularResource::getUrl());
+                                                
                                             }),
 
                                         Action::make('Desvincular Contactos')
@@ -388,33 +474,57 @@ class GestionarResource extends Resource
                                                     } else {
                                                         $eluser = $get('user_asignado');
                                                         if ($get('user_vigente')) {
-                                                            $set('mensaje', 'El usuario aún está activo... Desactivarlo primero.');
-                                                            return true;
+                                                            $set('mensaje', 'El usuario aún está activo: checando contactos....');
+                                                            // return true;
                                                         }
                                                     }
                                                 }
+
                                                 $hijos = Contacto::where('owner_id', $eluser)->count();
+
                                                 if ($hijos > 0) {
-                                                    $ejecutor = auth()->id;
+                                                    $ejecutor = Auth::user()->id;
                                                     $set('mensaje', 'Owner: ' . $eluser . ' tiene: ' . $hijos . ' regs. que pasan al Id: ' . $ejecutor);
                                                     // aqui va el codigo
                                                     try {
+
                                                         Contacto::Where('owner_id', $eluser)->update(['owner_id' => $ejecutor]);
+
+                                                        GestionarResource::makeNotification(
+                                                            'DESVINCULACIÓN COMPLETADA OK',
+                                                            'Los contactos ahora pertenecen al ejecutor de ésta acción.',
+                                                            'success',
+                                                            'tabler-info-circle-filled',
+                                                        )->send();
+    
+                                                        return true;
+                                                        
                                                     } catch(Exception $e) {
-                                                        $set('mensaje', 'Error en update contactos...' . $e);
+
+                                                        GestionarResource::makeNotification(
+                                                            'ERROR AL APLICAR CAMBIOS',
+                                                            $e->getMessage(),
+                                                            'danger',
+                                                            'tabler-face-id-error',
+                                                        )->send();
+    
                                                         return false;
+                                                        
                                                     }
                                                     $set('mensaje', 'Contactos Desvinculados: Click en guardar...');
                                                     return true;
+
                                                 } else {
+
                                                     $set('mensaje', 'El organizador no tiene contactos vinculados... No procede.');
                                                     return true;
+
                                                 }
                                             }),
 
                                         Action::make('Retirar el Nivel')
                                             ->icon('heroicon-m-arrow-long-down')
-                                            ->color('gray')
+                                            ->color('naranja')
                                             ->requiresConfirmation()
                                             ->action(function (Get $get, Set $set) {
                                                 $ident = $get('id');
@@ -507,11 +617,14 @@ class GestionarResource extends Resource
                 SelectColumn::make('nivel_en_red')
                     ->label('Nivel en Red')
                     ->options([
-                        '2' => 'Cord.',
-                        '3' => 'Oper.',
-                        '4' => 'Prom.',
+                        '2' => 'Cordinad',
+                        '3' => 'Operador',
+                        '4' => 'Promotor',
                     ])
                     ->disabled()
+                    ->extraInputAttributes([
+                        'style' => 'background-color: #000; color: #fff;',
+                    ])
                     ->selectablePlaceholder(false),
 
                 IconColumn::make('con_req_admin')
@@ -519,7 +632,8 @@ class GestionarResource extends Resource
                     ->boolean(),
 
                 TextColumn::make('requerimiento')
-                    ->label('Solicitud'),
+                    ->label('SOLICITUD')
+                    ->weight(FontWeight::Bold),
 
                 IconColumn::make('con_req_listo')
                     ->label('Listo?')
@@ -530,9 +644,9 @@ class GestionarResource extends Resource
                     ->boolean(),
 
                 TextColumn::make('user_asignado')
-                    ->label('Id User')
-                    ->badge()
-                    ->color('success'),  
+                    ->label('USER')
+                    ->color('info')
+                    ->size(TextColumnSize::Large),
 
                 IconColumn::make('user_vigente')
                     ->label('Activo?')
@@ -542,6 +656,7 @@ class GestionarResource extends Resource
                     ->label('Actualizado')
                     ->dateTime()
                     ->sortable()
+                    ->wrap()
                     ->since(),
 
             ])
@@ -575,5 +690,16 @@ class GestionarResource extends Resource
             'create' => CreateGestionar::route('/create'),
             'edit'   => EditGestionar::route('/{record}/edit'),
         ];
-    }     
+    }   
+    
+    private static function makeNotification(string $title, string $body, string $color, string $iconito): Notification
+    {
+        return Notification::make('RESULTADOS:')
+            ->icon($iconito)
+            ->color($color)
+            ->title($title)
+            ->body($body)
+            ->persistent();
+    }
+
 }

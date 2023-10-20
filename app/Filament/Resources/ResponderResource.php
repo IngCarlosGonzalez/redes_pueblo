@@ -23,12 +23,14 @@ use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\SelectColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ResponderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use App\Filament\Resources\ResponderResource\RelationManagers;
 use App\Filament\Resources\ResponderResource\Pages\EditResponder;
 use App\Filament\Resources\ResponderResource\Pages\ListResponders;
@@ -232,7 +234,7 @@ class ResponderResource extends Resource
                                                                 'name'               => $username,
                                                                 'email'              => $usermail,
                                                                 'password'           => Hash::make($userpswd),
-                                                                'email_verified_at'  => now(),
+                                                                'email_verified_at'  => null,
                                                                 'remember_token'     => Str::random(10),
                                                                 'profile_photo_path' => null,
                                                                 'is_active'          => true,
@@ -242,8 +244,15 @@ class ResponderResource extends Resource
                                                         )->assignRole($userrole);
 
                                                     } catch(Exception $e) {
-                                                        $set('mensaje', 'Error en create user...' . $e);
+
+                                                        ResponderResource::makeNotification(
+                                                            'ERROR AL CREAR REGISTRO',
+                                                            $e->getMessage(),
+                                                            'danger',
+                                                        )->send();
+    
                                                         return false;
+                                                        
                                                     }
                                     
                                                     if (is_null($creado)) {
@@ -307,8 +316,15 @@ class ResponderResource extends Resource
                                                     User::Where('id', $userasig)->update((['is_active' => false]));
 
                                                 } catch(Exception $e) {
-                                                    $set('mensaje', 'Error en update user...' . $e);
+
+                                                    ResponderResource::makeNotification(
+                                                        'ERROR AL APLICAR CAMBIO',
+                                                        $e->getMessage(),
+                                                        'danger',
+                                                    )->send();
+
                                                     return false;
+                                                    
                                                 }
 
                                                 $set('user_vigente' , false);
@@ -363,11 +379,18 @@ class ResponderResource extends Resource
                                                     User::Where('id', $userasig)->update((['is_active' => true]));
 
                                                 } catch(Exception $e) {
-                                                    $set('mensaje', 'Error en update user...' . $e);
+
+                                                    ResponderResource::makeNotification(
+                                                        'ERROR AL APLICAR CAMBIO',
+                                                        $e->getMessage(),
+                                                        'danger',
+                                                    )->send();
+
                                                     return false;
+                                                    
                                                 }
 
-                                                $set('user_vigente' , false);
+                                                $set('user_vigente' , true);
                                                 $set('con_req_admin', false);
                                                 $set('requerimiento', 'user-reactivado');
                                                 $set('con_req_listo', true);
@@ -380,7 +403,7 @@ class ResponderResource extends Resource
                                             ->icon('heroicon-m-key')
                                             ->color('primary')
                                             ->requiresConfirmation()
-                                            ->action(function (Get $get, Set $set) {
+                                            ->action(function (Get $get, Set $set, Contacto $record) {
                                                 $ident = $get('id');
                                                 $set('mensaje', 'Registro...' . $ident);
                                                 $nivel = $get('nivel_en_red');
@@ -413,7 +436,7 @@ class ResponderResource extends Resource
                                                 // aqui va el codigo
                                                 
                                                 $userasig = $get('user_asignado');
-                                                $newpaswd = 'Reseteada';
+                                                $newpaswd = 'muysecreta';
                                                 $userpswd = Hash::make($newpaswd);
                                 
                                                 try {
@@ -421,13 +444,21 @@ class ResponderResource extends Resource
                                                     User::Where('id', $userasig)->update((['password' => $userpswd]));
 
                                                 } catch(Exception $e) {
-                                                    $set('mensaje', 'Error en update user...' . $e);
+
+                                                    ResponderResource::makeNotification(
+                                                        'ERROR AL APLICAR CAMBIO',
+                                                        $e->getMessage(),
+                                                        'danger',
+                                                    )->send();
+
                                                     return false;
+                                                    
                                                 }
                                 
                                                 $set('con_req_admin', false);
                                                 $set('requerimiento', 'password-reset');
                                                 $set('con_req_listo', true);
+
                                                 $set('mensaje', 'Password Reseteada: Click en guardar...');
                                                 return true;
 
@@ -485,23 +516,20 @@ class ResponderResource extends Resource
                 SelectColumn::make('nivel_en_red')
                     ->label('Nivel en Red')
                     ->options([
-                        '2' => 'Cord.',
-                        '3' => 'Oper.',
-                        '4' => 'Prom.',
+                        '2' => 'Cordinad',
+                        '3' => 'Operador',
+                        '4' => 'Promotor',
                     ])
                     ->disabled()
+                    ->extraInputAttributes([
+                        'style' => 'background-color: #000; color: #fff;',
+                    ])
                     ->selectablePlaceholder(false),
 
-                IconColumn::make('con_req_admin')
-                    ->label('Req?')
-                    ->boolean(),
-
                 TextColumn::make('requerimiento')
-                    ->label('Solicitud'),
-
-                IconColumn::make('con_req_listo')
-                    ->label('Listo?')
-                    ->boolean(),
+                    ->label('SOLICITUD')
+                    ->color('fiucha')
+                    ->size(TextColumnSize::Large),
 
                 IconColumn::make('tiene_usuario')
                     ->label('User?')
@@ -509,8 +537,8 @@ class ResponderResource extends Resource
 
                 TextColumn::make('user_asignado')
                     ->label('Id User')
-                    ->badge()
-                    ->color('success'),  
+                    ->color('info')
+                    ->size(TextColumnSize::Large),  
 
                 IconColumn::make('user_vigente')
                     ->label('Activo?')
@@ -520,6 +548,7 @@ class ResponderResource extends Resource
                     ->label('Actualizado')
                     ->dateTime()
                     ->sortable()
+                    ->wrap()
                     ->since(),
 
             ])
@@ -553,5 +582,16 @@ class ResponderResource extends Resource
             'create' => CreateResponder::route('/create'),
             'edit'   => EditResponder::route('/{record}/edit'),
         ];
-    }    
+    }   
+    
+    private static function makeNotification(string $title, string $body, string $color): Notification
+    {
+        return Notification::make('PROBLEMAS:')
+            ->icon('tabler-face-id-error')
+            ->duration(9000)
+            ->color($color)
+            ->title($title)
+            ->body($body);
+    }
+ 
 }

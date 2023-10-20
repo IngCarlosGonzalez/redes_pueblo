@@ -31,15 +31,18 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->sidebarCollapsibleOnDesktop()
+            ->emailVerification()
+            ->sidebarFullyCollapsibleOnDesktop()
             ->font('Inter')
             ->colors([
-                'danger' => Color::Red,
-                'gray' => Color::Gray,
-                'info' => Color::Violet,
+                'danger'  => Color::Red,
+                'gray'    => Color::Gray,
+                'info'    => Color::Blue,
                 'primary' => Color::Indigo,
                 'success' => Color::Green,
                 'warning' => Color::Amber,
+                'naranja' => Color::Orange,
+                'fiucha'  => Color::Fuchsia,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

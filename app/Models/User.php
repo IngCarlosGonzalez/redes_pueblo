@@ -2,20 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Panel;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\VerifyEmail;
 use Laravel\Jetstream\HasProfilePhoto;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
@@ -67,11 +67,17 @@ class User extends Authenticatable implements FilamentUser
     protected $appends = [
         'profile_photo_url',
         'bandera',
+        'palabra',
     ];
 
     public function getBanderaAttribute()
     {
-        return true;
+        return false;
+    }
+
+    public function getPalabraAttribute()
+    {
+        return '';
     }
 
     public function contactos(): HasMany
@@ -87,6 +93,23 @@ class User extends Authenticatable implements FilamentUser
             'OPERADOR',
             'PROMOTOR'
         ]);
+    }
+
+    public function activate(): void
+    {
+        $this->is_active = true;
+        $this->save();
+    }
+
+    public function deactivate(): void
+    {
+        $this->is_active = false;
+        $this->save();
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmail);
     }
 
 }

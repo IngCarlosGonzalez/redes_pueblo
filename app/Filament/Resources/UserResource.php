@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Exception;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
@@ -15,13 +16,12 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
+use App\Notifications\UserNotification;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\UserResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\TextColumn\TextColumnSize;
-use App\Filament\Resources\UserResource\RelationManagers;
 
 class UserResource extends Resource
 {
@@ -146,20 +146,26 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre de Usuario')
                     ->searchable()
+                    ->wrap()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Cuenta de Correo')
-                    ->icon('heroicon-m-envelope')
                     ->searchable()
+                    ->wrap()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('email_verified_at')
+                    ->label('Verificación')
+                    ->dateTime()
+                    ->wrap()
+                    ->since(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Activo?')
                     ->boolean(),
                 Tables\Columns\IconColumn::make('is_admin')
-                    ->label('Es Admin?')
+                    ->label('Admin?')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('level_id')
-                    ->label('Acceso a')
+                    ->label('Nivel')
                     ->size(TextColumnSize::Large)
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -172,7 +178,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Registrado')
                     ->dateTime()
-                    ->sortable()
+                    ->wrap()
                     ->since(),
             ])
             ->filters([
@@ -180,6 +186,65 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('Mensaje')
+                ->requiresConfirmation()
+                ->icon('tabler-mail-forward')
+                ->color('naranja')
+                ->modalIcon('tabler-mail-forward')
+                ->modalDescription('Enviar mensaje por Correo Electrónico')
+                ->modalCancelActionLabel('Siempre No... Cancela')
+                ->modalSubmitActionLabel('Adelante... Enviar Correo')
+                ->form([
+                    Forms\Components\TextInput::make('subject')
+                    ->label('Asunto:')
+                    ->required(),
+                    Forms\Components\Textarea::make('message')
+                    ->label('Contenido:')
+                    ->required(),
+                ])
+                ->action(function (User $user, array $data) {
+                    //dd($data);
+                    try {
+                        $user->notify(new UserNotification($data['subject'], $data['message']));
+                        UserResource::makeNotification(
+                            'Envío Exitoso',
+                            'El mensaje por correo se envió con éxito!',
+                            'success',
+                        )->send();
+                    } catch (Exception $e) {
+                        UserResource::makeNotification(
+                            'Error al Enviar',
+                            $e->getMessage(),
+                            'danger',
+                        )->send();
+                    }
+                }),
+                /* Tables\Actions\Action::make('Recordatorio')
+                ->visible(fn (User $user) => ! $user->hasVerifiedEmail())
+                ->requiresConfirmation()
+                ->icon('tabler-mail-forward')
+                ->color('danger')
+                ->modalIcon('tabler-mail-forward')
+                ->modalDescription('Enviar recordatorio de verificación de su cuenta de correo')
+                ->modalCancelActionLabel('Cancelar')
+                ->modalSubmitActionLabel('Enviar Correo')
+                ->action(function (User $user) {
+                    //dd($user);
+                    try {
+                        $user->sendEmailVerificationNotification();
+                        UserResource::makeNotification(
+                            'Envío Exitoso',
+                            'El mensaje por correo se envió con éxito!',
+                            'success',
+                        )->send();
+                    } catch (Exception $e) {
+                        UserResource::makeNotification(
+                            'Error al Enviar',
+                            $e->getMessage(),
+                            'danger',
+                        )->send();
+                    }
+                }), */
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -206,4 +271,13 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }    
+
+    private static function makeNotification(string $title, string $body, string $color = 'success'): Notification
+    {
+        return Notification::make('Resultados del Envío')
+            ->color($color)
+            ->title($title)
+            ->body($body);
+    }
+
 }

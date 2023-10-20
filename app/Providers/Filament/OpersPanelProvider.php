@@ -27,15 +27,17 @@ class OpersPanelProvider extends PanelProvider
             ->id('opers')
             ->path('opers')
             ->login()
-            ->sidebarCollapsibleOnDesktop()
+            ->sidebarFullyCollapsibleOnDesktop()
+            ->emailVerification()
             ->font('Inter')
             ->colors([
-                'danger' => Color::Rose,
+                'danger' => Color::Red,
                 'gray' => Color::Gray,
                 'info' => Color::Blue,
                 'primary' => Color::Lime,
-                'success' => Color::Emerald,
-                'warning' => Color::Orange,
+                'success' => Color::Green,
+                'warning' => Color::Amber,
+                'naranja' => Color::Orange,
             ])
             ->discoverResources(in: app_path('Filament/Opers/Resources'), for: 'App\\Filament\\Opers\\Resources')
             ->discoverPages(in: app_path('Filament/Opers/Pages'), for: 'App\\Filament\\Opers\\Pages')

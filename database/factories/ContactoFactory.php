@@ -34,18 +34,18 @@ class ContactoFactory extends Factory
             'nombres_contacto' => 'Nombres',
             'apellido_paterno' => 'Paterno',
             'apellido_materno' => 'Materno',
-            'nombre_en_cadena' => 'Nombres Paterno Materno',
+            'nombre_en_cadena' => $this->faker->name(),
             'clave_genero'     => 'SIN DATOS',
             'fecha_nacimiento' => $this->faker->date,
             'dato_de_curp'     => 'prueba',
 
-            'municipio_id'        => 39,
+            'municipio_id'        => 30,
             'colonia_id'          => 0,
             'colonia_catalogada'  => 0,
-            'domicilio_colonia'   => 'FRACCIONAMIENTO CONOCIDO',
-            'domicilio_calle'     => 'CALLE CONOCIDA',
-            'domicilio_numext'    => '1234',
-            'domicilio_numint'    => 'n/a',
+            'domicilio_colonia'   => '',
+            'domicilio_calle'     => 'DOMICILIO CONOCIDO',
+            'domicilio_numext'    => '123',
+            'domicilio_numint'    => '',
             'domicilio_codpost'   => '25678',
 
             'tiene_celular'     => 1,
@@ -117,8 +117,8 @@ class ContactoFactory extends Factory
             'interesa_darasesorias'    => $this->faker->numberBetween($min = 0, $max = 1),
 
             'sus_aportaciones'         => $this->faker->word(100),
-            'mis_comentarios'          => $this->faker->word(100),
- */
+            'mis_comentarios'          => $this->faker->word(100), */
+
         ];
     }
 }

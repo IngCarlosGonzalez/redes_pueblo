@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ContactoResource\Pages;
 
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\ContactoResource;
@@ -22,6 +23,18 @@ class EditContacto extends EditRecord
             // Actions\DeleteAction::make(),
         ];
     }
+
+    /* protected function getFormActions(): array
+    {
+        return [
+            ...parent::getFormActions(),
+            Action::make('arriba')->action('irArriba'),
+        ];
+    }
+     public function irArriba(): void
+    {
+        // ...
+    } */
 
     protected function getSavedNotification(): ?Notification
     {
