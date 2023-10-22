@@ -8,10 +8,12 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use App\Models\Contacto;
 use Filament\Forms\Form;
+use App\Models\Categoria;
 use App\Models\Municipio;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -165,8 +167,29 @@ class ContactoResource extends Resource
 
                             Select::make('categoria_id')
                             ->label('Clasificación')
-                            ->relationship('categoria', 'nombre')
-                            ->preload()
+                            ->options(function () {
+                                // obtiene nivel del usuario
+                                $denivel = Auth::user()->level_id;
+                                if ($denivel < 1) {
+                                    return null;
+                                } elseif ($denivel == 1) {
+                                    // solo administradores
+                                    $mostrar = Categoria::all()
+                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                } elseif ($denivel > 3) {
+                                    // solo promotores
+                                    $mostrar = Categoria::where('id', '<', 15)
+                                    ->orWhere('id', '>', 16)
+                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                } else {
+                                    // coordinadores y operadres
+                                    $mostrar = Categoria::where('id', '<', 16)
+                                    ->orWhere('id', '>', 16)
+                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                }
+                                // regresa las opciones
+                                return $mostrar;
+                            })
                             ->live(onBlur: true)
                             ->required(),
                 

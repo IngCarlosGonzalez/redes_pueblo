@@ -306,6 +306,7 @@ class ResponderResource extends Resource
                                                         }
                                                     }
                                                 }
+
                                                 $set('mensaje', 'Procede a registrar la solicitud... Desactivación.');
                                                 // aqui va el codigo
 
@@ -313,12 +314,17 @@ class ResponderResource extends Resource
 
                                                 try {
 
-                                                    User::Where('id', $userasig)->update((['is_active' => false]));
+                                                    User::Where('id', $userasig)
+                                                    ->update(['is_active' => false, 'level_id' => 5]);
+
+                                                    $user = User::where('id', $userasig)->first();
+
+                                                    $user->syncRoles(['SUSPENDIDO']);
 
                                                 } catch(Exception $e) {
 
                                                     ResponderResource::makeNotification(
-                                                        'ERROR AL APLICAR CAMBIO',
+                                                        'ERROR AL APLICAR CAMBIOS',
                                                         $e->getMessage(),
                                                         'danger',
                                                     )->send();
@@ -331,7 +337,7 @@ class ResponderResource extends Resource
                                                 $set('con_req_admin', false);
                                                 $set('requerimiento', 'user-desactivado');
                                                 $set('con_req_listo', true);
-                                                $set('mensaje', 'User DESACTIVADO: Click en guardar...');
+                                                $set('mensaje', 'User DESACTIVADO y SUSPENDIDO: Click en guardar...');
                                                 return true;
 
                                             }),
@@ -369,19 +375,35 @@ class ResponderResource extends Resource
                                                         }
                                                     }
                                                 }
+
                                                 $set('mensaje', 'Procede a registrar la solicitud... Reactivación');
                                                 // aqui va el codigo
 
                                                 $userasig = $get('user_asignado');
 
+                                                $userlevl = $get('nivel_en_red');
+
+                                                if ($userlevl == 2) {
+                                                    $userrole = 'COORDINADOR';
+                                                } elseif ($userlevl == 3) {
+                                                    $userrole = 'OPERADOR';
+                                                } else {
+                                                    $userrole = 'PROMOTOR';
+                                                }
+
                                                 try {
 
-                                                    User::Where('id', $userasig)->update((['is_active' => true]));
+                                                    User::Where('id', $userasig)
+                                                    ->update(['is_active' => true, 'level_id' => $userlevl]);
+
+                                                    $user = User::where('id', $userasig)->first();
+
+                                                    $user->syncRoles([$userrole]);
 
                                                 } catch(Exception $e) {
 
                                                     ResponderResource::makeNotification(
-                                                        'ERROR AL APLICAR CAMBIO',
+                                                        'ERROR AL APLICAR CAMBIOS',
                                                         $e->getMessage(),
                                                         'danger',
                                                     )->send();
@@ -394,7 +416,7 @@ class ResponderResource extends Resource
                                                 $set('con_req_admin', false);
                                                 $set('requerimiento', 'user-reactivado');
                                                 $set('con_req_listo', true);
-                                                $set('mensaje', 'User REACTIVADO: Click en guardar...');
+                                                $set('mensaje', 'User REACTIVADO con su Rol: Click en guardar...');
                                                 return true;
 
                                             }),

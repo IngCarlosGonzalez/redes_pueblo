@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\ContactoResource\Pages;
 
-use Filament\Actions;
-use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use App\Filament\Resources\ContactoResource;
@@ -24,6 +22,17 @@ class EditContacto extends EditRecord
         ];
     }
 
+    protected function getSavedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->color('info')
+            ->duration(8000)
+            ->icon('heroicon-o-check-circle')
+            ->iconColor('warning')
+            ->title('CONTACTO ALMACENADO OK')
+            ->body('El contacto ha sido actualizado correctamente.');
+    }
+
     /* protected function getFormActions(): array
     {
         return [
@@ -35,16 +44,5 @@ class EditContacto extends EditRecord
     {
         // ...
     } */
-
-    protected function getSavedNotification(): ?Notification
-    {
-        return Notification::make()
-            ->color('info')
-            ->duration(8000)
-            ->icon('heroicon-o-check-circle')
-            ->iconColor('warning')
-            ->title('CONTACTO ALMACENADO OK')
-            ->body('El contacto ha sido actualizado correctamente.');
-    }
 
 }

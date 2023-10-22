@@ -112,11 +112,11 @@ class UserResource extends Resource
                         Select::make('level_id')
                             ->label('Acceso')
                             ->options([
-                                '1' => 'TODO',
-                                '2' => 'DIVISION',
-                                '3' => 'GRUPO',
-                                '4' => 'CELULA',
-                                '5' => 'nada',
+                                '1' => 'ADMIN',
+                                '2' => 'COORD',
+                                '3' => 'OPERS',
+                                '4' => 'PROMS',
+                                '5' => 'GENTE',
                             ])
                             ->required(), 
                         Select::make('roles')

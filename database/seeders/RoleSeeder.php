@@ -27,6 +27,9 @@ class RoleSeeder extends Seeder
         $role4 = Role::create([
             'name' => 'PROMOTOR'
         ]);
+        $role5 = Role::create([
+            'name' => 'SUSPENDIDO'
+        ]);
 
         // aqui se definen los primeros permisos y se asignan a roles
         Permission::create([
@@ -41,6 +44,9 @@ class RoleSeeder extends Seeder
         Permission::create([
             'name' => 'tareas promotor'
         ])->assignRole($role4);
+        Permission::create([
+            'name' => 'sin permisos'
+        ])->assignRole($role5);
 
         // cuando son varios roles para mismo permiso se usa:
         //Permission::create(['name' => 'permiso'])->syncRoles([$role1, $role2]);
