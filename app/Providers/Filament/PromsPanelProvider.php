@@ -6,7 +6,10 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use App\Filament\Pages\Usuario;
+use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
+use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\Authenticate;
 use App\Http\Middleware\SoloUsuarioPromotor;
 use Illuminate\Session\Middleware\StartSession;
@@ -38,6 +41,7 @@ class PromsPanelProvider extends PanelProvider
                 'success' => Color::Green,
                 'warning' => Color::Amber,
                 'naranja' => Color::Orange,
+                'fiucha'  => Color::Fuchsia,
             ])
             ->discoverResources(in: app_path('Filament/Proms/Resources'), for: 'App\\Filament\\Proms\\Resources')
             ->discoverPages(in: app_path('Filament/Proms/Pages'), for: 'App\\Filament\\Proms\\Pages')
@@ -47,6 +51,16 @@ class PromsPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Proms/Widgets'), for: 'App\\Filament\\Proms\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+            ])
+            ->navigationGroups([
+                NavigationGroup::make()
+                    ->label('CONTACTOS'),
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Password')
+                    ->url(fn (): string => Usuario::getUrl())
+                    ->icon('heroicon-o-key'),
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Auth;
 
 class UserPolicy
 {
@@ -20,7 +21,15 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->hasRole('ADMINISTRADOR');
+        if ( $user->hasRole('ADMINISTRADOR') ) {
+            return true;
+        } else {
+            if ( $model->id == Auth::user()->id ) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     /**
@@ -36,7 +45,15 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->hasRole('ADMINISTRADOR');
+        if ( $user->hasRole('ADMINISTRADOR') ) {
+            return true;
+        } else {
+            if ( $model->id == Auth::user()->id ) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     /**

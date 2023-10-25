@@ -17,4 +17,5 @@ class ListContactos extends ListRecords
                 ->createAnother(false),
         ];
     }
+    
 }

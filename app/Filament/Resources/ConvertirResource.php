@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -10,24 +9,18 @@ use App\Models\Contacto;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Illuminate\Support\Facades\DB;
 use App\Forms\Components\Mensajito;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Section;
-use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Actions\Action;
-use App\Filament\Resources\ConvertirResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\ConvertirResource\RelationManagers;
 use App\Filament\Resources\ConvertirResource\Pages\EditConvertir;
 use App\Filament\Resources\ConvertirResource\Pages\ListConvertirs;
 use App\Filament\Resources\ConvertirResource\Pages\CreateConvertir;
@@ -37,6 +30,7 @@ class ConvertirResource extends Resource
     protected static ?string $model = Contacto::class;
 
     protected static ?string $modelLabel = 'Prospecto';
+    protected static ?string $pluralModelLabel = 'Prospectos';
 
     protected static ?string $navigationLabel = 'Convertir';
 
@@ -153,8 +147,11 @@ class ConvertirResource extends Resource
                                                     $nuevo = 4;
                                                 } elseif ($nivel == 4) {
                                                     $nuevo = 3;
-                                                } else {
+                                                } elseif ($nivel == 3) {
                                                     $nuevo = 2;
+                                                } else {
+                                                    set('mensaje', '>>> ERROR EN NIVEL DEL REGISTRO <<<');
+                                                    return true;
                                                 }
                                                 $catego = 16;
                                                 if ($get('tiene_celular') && $get('tiene_correo')) {

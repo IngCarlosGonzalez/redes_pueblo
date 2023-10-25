@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\GestionarResource\Pages;
 
 use App\Filament\Resources\GestionarResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListGestionars extends ListRecords

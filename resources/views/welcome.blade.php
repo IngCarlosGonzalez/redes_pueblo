@@ -20,10 +20,10 @@
                         
                         <div class="mt-12 ml-24 space-x-8 md:block md:col-span-4 md:ml-48 lg:ml-60">
                             <div width="36" class="h-16 mb-6 ml-8 w-60 ">
-                                <a class="box-border h-16 p-4 border-4 rounded-md w-60 hover:scale-125 hover:bg-zinc-400 hover:text-black text-amber-700" href="/admin">ADMIN</a>
+                                <a class="box-border h-16 p-4 border-4 rounded-md w-60 hover:scale-125 hover:bg-zinc-400 hover:text-black text-indigo-700" href="/admin">ADMIN</a>
                             </div>
                             <div width="36" class="h-16 mb-6 ml-4 w-60 ">
-                                <a class="box-border h-16 p-4 border-4 rounded-md w-60 hover:scale-125 hover:bg-zinc-400 hover:text-black text-violet-700" href="/coord">COORD</a>
+                                <a class="box-border h-16 p-4 border-4 rounded-md w-60 hover:scale-125 hover:bg-zinc-400 hover:text-black text-pink-500" href="/coord">COORD</a>
                             </div>
                             <div width="36" class="h-16 mb-6 ml-4 w-60 ">
                                 <a class="box-border h-16 p-4 border-4 rounded-md w-60 hover:scale-125 hover:bg-zinc-400 hover:text-black text-lime-700" href="/opers">OPERS</a>
