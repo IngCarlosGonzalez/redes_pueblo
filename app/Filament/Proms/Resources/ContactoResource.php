@@ -46,7 +46,8 @@ class ContactoResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('owner_id', '=', Auth::user()->id);
+            ->where('owner_id', '=', Auth::user()->id)
+            ->where('nivel_en_red', '=', 5);
     }
 
     public static function form(Form $form): Form
@@ -949,6 +950,18 @@ class ContactoResource extends Resource
                         ])
                         ->collapsible() 
                         ->collapsed() 
+                        ->compact()
+                        ->columns(1),
+
+                        Section::make()
+                        ->description('Para buscar registros con ciertas características...')
+                        ->schema([
+                            
+                            TextInput::make('palabras_clave')
+                            ->label('Palabras Clave')
+                            ->maxLength(99),
+
+                        ])
                         ->compact()
                         ->columns(1),
 

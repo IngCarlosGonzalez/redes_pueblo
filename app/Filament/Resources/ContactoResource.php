@@ -26,23 +26,23 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\ContactoResource\Pages;
-
+use Illuminate\Database\Eloquent\Builder;
 
 class ContactoResource extends Resource
 {
     protected static ?string $model = Contacto::class;
-
     protected static ?string $modelLabel = 'Contacto';
-
     protected static ?string $pluralModelLabel = 'Contactos';
-
     protected static ?string $navigationLabel = 'Registro';
-
     protected static ?string $navigationIcon = 'heroicon-o-user';
-
     protected static ?string $navigationGroup = 'CONTACTOS';
-
     protected static ?int $navigationSort = 1; 
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('nivel_en_red', '=', 5);
+    }
 
     public static function form(Form $form): Form
     {
@@ -944,6 +944,18 @@ class ContactoResource extends Resource
                         ])
                         ->collapsible() 
                         ->collapsed() 
+                        ->compact()
+                        ->columns(1),
+
+                        Section::make()
+                        ->description('Para buscar registros con ciertas características...')
+                        ->schema([
+                            
+                            TextInput::make('palabras_clave')
+                            ->label('Palabras Clave')
+                            ->maxLength(99),
+
+                        ])
                         ->compact()
                         ->columns(1),
 
