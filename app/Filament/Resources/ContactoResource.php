@@ -38,12 +38,6 @@ class ContactoResource extends Resource
     protected static ?string $navigationGroup = 'CONTACTOS';
     protected static ?int $navigationSort = 1; 
 
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->where('nivel_en_red', '=', 5);
-    }
-
     public static function form(Form $form): Form
     {
         return $form
@@ -175,17 +169,17 @@ class ContactoResource extends Resource
                                 } elseif ($denivel == 1) {
                                     // solo administradores
                                     $mostrar = Categoria::all()
-                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                    ->sortBy('id')->pluck('nombre', 'id')->toArray();
                                 } elseif ($denivel > 3) {
                                     // solo promotores
                                     $mostrar = Categoria::where('id', '<', 15)
                                     ->orWhere('id', '>', 16)
-                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                    ->sortBy('id')->pluck('nombre', 'id')->toArray();
                                 } else {
                                     // coordinadores y operadres
                                     $mostrar = Categoria::where('id', '<', 16)
                                     ->orWhere('id', '>', 16)
-                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                    ->sortBy('id')->pluck('nombre', 'id')->toArray();
                                 }
                                 // regresa las opciones
                                 return $mostrar;
@@ -976,6 +970,10 @@ class ContactoResource extends Resource
                 TextColumn::make('id')
                     ->sortable(),
 
+                TextColumn::make('clave_tipo')
+                    ->label('Tipo Contacto')
+                    ->sortable(),
+
                 TextColumn::make('owner_id')
                     ->label('Owner')
                     ->badge()
@@ -988,6 +986,10 @@ class ContactoResource extends Resource
                     ->disk('digitalocean')
                     ->size(40)
                     ->circular(),
+
+                TextColumn::make('clave_tipo')
+                    ->label('Tipo Contacto')
+                    ->sortable(),
 
                 TextColumn::make('nombre_en_cadena')
                     ->label('Nombre del Contacto')

@@ -46,8 +46,7 @@ class ContactoResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('owner_id', '=', Auth::user()->id)
-            ->where('nivel_en_red', '=', 5);
+            ->where('owner_id', '=', Auth::user()->id);
     }
 
     public static function form(Form $form): Form
@@ -181,17 +180,17 @@ class ContactoResource extends Resource
                                 } elseif ($denivel == 1) {
                                     // solo administradores
                                     $mostrar = Categoria::all()
-                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                    ->sortBy('id')->pluck('nombre', 'id')->toArray();
                                 } elseif ($denivel > 3) {
                                     // solo promotores
                                     $mostrar = Categoria::where('id', '<', 15)
                                     ->orWhere('id', '>', 16)
-                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                    ->sortBy('id')->pluck('nombre', 'id')->toArray();
                                 } else {
                                     // coordinadores y operadres
                                     $mostrar = Categoria::where('id', '<', 16)
                                     ->orWhere('id', '>', 16)
-                                    ->orderBy('id')->pluck('nombre', 'id')->toArray();
+                                    ->sortBy('id')->pluck('nombre', 'id')->toArray();
                                 }
                                 // regresa las opciones
                                 return $mostrar;
