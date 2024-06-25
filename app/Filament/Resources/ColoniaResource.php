@@ -2,30 +2,23 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use App\Models\Colonia;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Actions\Action;
 use App\Filament\Resources\ColoniaResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\ColoniaResource\RelationManagers;
 
 class ColoniaResource extends Resource
 {
     protected static ?string $model = Colonia::class;
 
-    protected static ?string $modelLabel = 'Colonias';
+    protected static ?string $modelLabel = 'Colonia';
+    protected static ?string $pluralModelLabel = 'Colonias';
 
     protected static ?string $navigationLabel = 'Colonias';
 

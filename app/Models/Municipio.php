@@ -23,4 +23,10 @@ class Municipio extends Model
     {
         return $this->hasMany(Contacto::class);
     }
+
+    public function secciones(): HasMany
+    {
+        return $this->hasMany(Seccion::class);
+    }
+    
 }

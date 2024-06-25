@@ -55,7 +55,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    protected $casteos = [
         'email_verified_at' => 'datetime',
     ];
 
